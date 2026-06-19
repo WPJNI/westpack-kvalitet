@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Westpack – Kvalitetsstopper v2</title>
+<style>
+:root {
+  --navy:#1a2e44; --navy2:#243d57; --navy3:#2e4f6e;
+  --gold:#c8973a; --gold-lt:#f5e6c0;
+  --red:#c0392b; --red-lt:#fdecea;
+  --green:#27ae60; --green-lt:#e8f8ef;
+  --orange:#e67e22; --orange-lt:#fef3e2;
+  --bg:#f0f4f8; --card:#fff; --border:#d0dae4;
+  --text:#1a2e44; --muted:#6b7f93; --input-bg:#f7fafc;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* Header */
+header{background:var(--navy);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);}
+.logo{color:var(--gold);font-size:1rem;font-weight:800;letter-spacing:.05em;}
+.logo span{color:#aabfd4;font-weight:400;}
+nav{display:flex;gap:2px;}
+nav button{background:none;border:none;color:#7a9ab5;font-size:.82rem;padding:7px 14px;border-radius:4px;cursor:pointer;font-weight:600;transition:all .15s;white-space:nowrap;}
+nav button.active,nav button:hover{background:rgba(200,151,58,.18);color:var(--gold);}
+
+main{max-width:1160px;margin:0 auto;padding:24px 20px;}
+.page{display:none;}.page.active{display:block;}
+
+/* Cards */
+.card{background:var(--card);border-radius:8px;border:1px solid var(--border);padding:22px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.card-title{font-size:.9rem;font-weight:800;color:var(--navy);margin-bottom:16px;border-bottom:2px solid var(--gold);padding-bottom:7px;display:inline-block;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.full{grid-column:1/-1;}
+
+/* Form */
+.form-group{display:flex;flex-direction:column;gap:5px;}
+label.lbl{font-size:.73rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+input,select,textarea{background:var(--input-bg);border:1px solid var(--border);border-radius:5px;padding:9px 12px;font-size:.9rem;color:var(--text);font-family:inherit;width:100%;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);background:#fff;}
+textarea{resize:vertical;min-height:72px;}
+.btn{padding:10px 22px;border-radius:5px;font-weight:700;font-size:.9rem;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:var(--gold);color:var(--navy);}
+.btn-primary:hover{background:#b8882e;}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--navy);color:var(--navy);}
+.btn-danger-sm{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:4px;font-size:.78rem;cursor:pointer;}
+.btn-danger-sm:hover{border-color:var(--red);color:var(--red);}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;text-align:center;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold);}
+.kpi.red::before{background:var(--red);}
+.kpi.green::before{background:var(--green);}
+.kpi.orange::before{background:var(--orange);}
+.kpi .val{font-size:1.9rem;font-weight:900;line-height:1.1;color:var(--navy);}
+.kpi .lbl{font-size:.68rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.04em;}
+.kpi .sub{font-size:.72rem;margin-top:4px;font-weight:600;}
+.kpi.red .val{color:var(--red);}
+.kpi.green .val{color:var(--green);}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+thead th{background:var(--navy);color:#fff;padding:9px 11px;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none;white-space:nowrap;}
+thead th:hover{background:var(--navy2);}
+tbody tr{border-bottom:1px solid var(--border);}
+tbody tr:hover{background:#f5f9ff;}
+tbody td{padding:8px 11px;vertical-align:middle;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase;}
+.badge-nok{background:var(--red-lt);color:var(--red);}
+.badge-ok{background:var(--green-lt);color:var(--green);}
+.badge-open{background:var(--orange-lt);color:var(--orange);}
+.badge-closed{background:var(--green-lt);color:var(--green);}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.filter-bar input,.filter-bar select{width:auto;padding:7px 11px;font-size:.83rem;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:11px 20px;border-radius:6px;font-weight:700;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;}
+.toast.show{opacity:1;}
+
+/* Charts */
+.chart-container{position:relative;width:100%;overflow:hidden;}
+canvas{display:block;max-width:100%;}
+
+/* Heatmap */
+.heatmap{display:grid;gap:2px;margin-top:8px;}
+.heatmap-row{display:flex;align-items:center;gap:4px;}
+.heatmap-label{font-size:.75rem;color:var(--muted);width:100px;text-align:right;flex-shrink:0;}
+.heatmap-cells{display:flex;gap:2px;flex:1;}
+.heatmap-cell{flex:1;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;transition:transform .1s;}
+.heatmap-cell:hover{transform:scale(1.08);z-index:2;}
+.heatmap-col-labels{display:flex;gap:2px;padding-left:108px;margin-bottom:4px;}
+.heatmap-col-label{flex:1;font-size:.68rem;color:var(--muted);text-align:center;}
+
+/* Combo table */
+.combo-cell{padding:6px 10px;text-align:center;border-radius:3px;font-size:.78rem;font-weight:600;}
+
+/* Photo preview */
+.photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.photo-thumb{position:relative;width:80px;height:80px;border-radius:5px;overflow:hidden;border:1px solid var(--border);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-thumb .del-photo{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.photo-log-thumb{width:36px;height:36px;border-radius:4px;object-fit:cover;cursor:pointer;border:1px solid var(--border);}
+
+/* Status badge */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+.dot-open{background:var(--orange);}
+.dot-closed{background:var(--green);}
+
+/* KPI settings */
+.kpi-settings{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.kpi-set-item{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:12px;}
+.kpi-set-item label.lbl{display:block;margin-bottom:6px;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:10px;padding:24px;max-width:520px;width:90%;max-height:85vh;overflow-y:auto;}
+.modal img{width:100%;border-radius:6px;margin-top:12px;}
+.modal h3{font-size:1rem;font-weight:800;color:var(--navy);margin-bottom:12px;}
+
+/* Trend period toggle */
+.toggle-group{display:flex;gap:0;border:1px solid var(--border);border-radius:5px;overflow:hidden;width:fit-content;}
+.toggle-group button{background:none;border:none;padding:6px 16px;font-size:.8rem;cursor:pointer;color:var(--muted);font-weight:600;transition:all .15s;}
+.toggle-group button.active{background:var(--navy);color:#fff;}
+
+.empty{color:var(--muted);font-size:.88rem;text-align:center;padding:28px;}
+.row-flex{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.spacer{flex:1;}
+
+/* AI analyse */
+.ai-btn{background:linear-gradient(135deg,#1a2e44,#2e4f6e);color:var(--gold);border:2px solid var(--gold);padding:14px 32px;border-radius:7px;font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:.03em;transition:all .2s;display:flex;align-items:center;gap:10px;}
+.ai-btn:hover{background:var(--gold);color:var(--navy);}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed;}
+.ai-spinner{width:18px;height:18px;border:3px solid rgba(200,151,58,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.ai-spinner.show{display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ai-result{background:#f7fafc;border:1px solid var(--border);border-radius:8px;padding:24px;margin-top:20px;line-height:1.7;font-size:.92rem;display:none;}
+.ai-result.show{display:block;}
+.ai-result h3{font-size:1rem;font-weight:800;color:var(--navy);margin:18px 0 8px;border-left:3px solid var(--gold);padding-left:10px;}
+.ai-result h3:first-child{margin-top:0;}
+.ai-result ul{padding-left:20px;margin:6px 0;}
+.ai-result li{margin-bottom:5px;}
+.ai-result .priority-1{background:var(--red-lt);border-left:4px solid var(--red);padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;}
+.ai-result .priority-2{background:var(--orange-lt);border-left:4px solid var(--orange);padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;}
+.ai-result .priority-3{background:var(--green-lt);border-left:4px solid var(--green);padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;}
+.ai-meta{font-size:.75rem;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border);}
+.ai-scope{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.ai-scope label{font-size:.8rem;color:var(--muted);font-weight:600;}
+.ai-scope select{width:auto;padding:7px 12px;font-size:.83rem;}
+
+/* Overblik */
+.alarm-card{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:7px;margin-bottom:8px;border:1px solid transparent;}
+.alarm-card.rod{background:var(--red-lt);border-color:#f5c6c2;}
+.alarm-card.orange{background:var(--orange-lt);border-color:#fdd8b0;}
+.alarm-icon{font-size:1.5rem;flex-shrink:0;}
+.alarm-title{font-weight:800;font-size:.9rem;color:var(--navy);}
+.alarm-sub{font-size:.78rem;color:var(--muted);margin-top:2px;}
+.problem-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px 18px;display:flex;gap:16px;align-items:flex-start;position:relative;overflow:hidden;}
+.problem-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;}
+.problem-card.p1::before{background:var(--red);}
+.problem-card.p2::before{background:var(--orange);}
+.problem-card.p3::before{background:#f1c40f;}
+.problem-rank{font-size:2rem;font-weight:900;color:var(--border);line-height:1;flex-shrink:0;width:32px;}
+.problem-rank.p1{color:var(--red);}
+.problem-rank.p2{color:var(--orange);}
+.problem-rank.p3{color:#f1c40f;}
+.problem-body{flex:1;}
+.problem-title{font-weight:800;font-size:.95rem;color:var(--navy);margin-bottom:4px;}
+.problem-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.tag{padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.problem-desc{font-size:.8rem;color:var(--muted);line-height:1.5;}
+.problem-count{text-align:right;flex-shrink:0;}
+.problem-count .big{font-size:1.8rem;font-weight:900;color:var(--navy);line-height:1;}
+.problem-count .lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;}
+.fejl-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.fejl-bar-label{font-size:.82rem;font-weight:600;color:var(--navy);width:180px;flex-shrink:0;}
+.fejl-bar-track{flex:1;background:var(--bg);border-radius:20px;height:22px;overflow:hidden;}
+.fejl-bar-fill{height:100%;border-radius:20px;transition:width .6s ease;display:flex;align-items:center;padding-left:10px;}
+.fejl-bar-val{font-size:.72rem;font-weight:800;color:#fff;white-space:nowrap;}
+.fejl-bar-pct{font-size:.78rem;color:var(--muted);width:44px;text-align:right;flex-shrink:0;}
+.batch-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:6px;background:var(--bg);border:1px solid var(--border);margin-bottom:6px;}
+.batch-name{font-weight:800;font-size:.88rem;color:var(--navy);min-width:120px;}
+.batch-bar-track{flex:1;background:#e0e8f0;border-radius:10px;height:14px;overflow:hidden;}
+.batch-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--orange),var(--red));}
+.batch-count{font-size:.8rem;font-weight:700;color:var(--red);min-width:60px;text-align:right;}
+.matrix-cell{padding:8px 6px;text-align:center;border-radius:4px;font-size:.78rem;font-weight:700;min-width:60px;}
+
+  .kpi-strip{grid-template-columns:1fr 1fr;}
+  .grid2,.grid3{grid-template-columns:1fr;}
+  nav button{padding:7px 9px;font-size:.75rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">WESTPACK <span>| Kvalitetsstopper</span></div>
+  <nav>
+    <button class="active" onclick="showPage('reg',this)">+ Registrer</button>
+    <button onclick="showPage('overblik',this)">🎯 Overblik</button>
+    <button onclick="showPage('dash',this)">Dashboard</button>
+    <button onclick="showPage('trend',this)">Trend</button>
+    <button onclick="showPage('analyse',this)">Analyse</button>
+    <button onclick="showPage('ai',this)">🤖 AI-analyse</button>
+    <button onclick="showPage('log',this)">Log</button>
+    <button onclick="showPage('ops',this)">Indstillinger</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ══ REGISTRERING ══ -->
+<div class="page active" id="page-reg">
+
+  <!-- Scan banner -->
+  <div class="card" style="border:2px dashed var(--gold);background:linear-gradient(135deg,#1a2e44,#243d57);padding:20px 24px;">
+    <div class="row-flex">
+      <div>
+        <div style="color:var(--gold);font-size:1rem;font-weight:800;margin-bottom:4px;">📷 Scan papir-stoprapporten</div>
+        <div style="color:#aabfd4;font-size:.83rem;">Tag et foto eller upload et billede – AI læser håndskriften og udfylder formularen automatisk</div>
+      </div>
+      <div class="spacer"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" style="display:flex;align-items:center;gap:8px;padding:10px 18px;" onclick="document.getElementById('scan-input-cam').click()">
+          📷 Tag foto
+        </button>
+        <input type="file" id="scan-input-cam" accept="image/*" capture="environment" style="display:none;" onchange="scanStopRapport(event)">
+        <button class="btn btn-ghost" style="display:flex;align-items:center;gap:8px;padding:10px 18px;color:#aabfd4;border-color:#3d6b93;" onclick="document.getElementById('scan-input-file').click()">
+          📁 Upload billede
+        </button>
+        <input type="file" id="scan-input-file" accept="image/*" style="display:none;" onchange="scanStopRapport(event)">
+      </div>
+    </div>
+    <div id="scan-status" style="margin-top:12px;display:none;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="ai-spinner show" id="scan-spin"></div>
+        <span id="scan-txt" style="color:#aabfd4;font-size:.85rem;">Læser stop-rapporten…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scan preview modal -->
+  <div class="modal-overlay" id="scan-modal" onclick="lukScanModal(event)">
+    <div class="modal" style="max-width:620px;" id="scan-modal-inner">
+      <h3 style="color:var(--navy);margin-bottom:4px;">✅ AI har læst stop-rapporten</h3>
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px;">Gennemgå og ret hvis nødvendigt, bekræft derefter.</p>
+      <div id="scan-preview-img" style="margin-bottom:16px;"></div>
+      <div class="grid2" id="scan-fields" style="gap:10px 16px;"></div>
+      <div style="margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="bekræftScan()">✓ Bekræft og overfør til formular</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('scan-modal').classList.remove('show')">Annullér</button>
+        <span id="scan-conf-note" style="font-size:.78rem;color:var(--muted);">Du kan stadig rette i formularen bagefter</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ny stop-rapport</div>
+    <div class="grid2">
+      <div class="form-group">
+        <label class="lbl">Dato & tid</label>
+        <input type="datetime-local" id="f-dato">
+      </div>
+      <div class="form-group">
+        <label class="lbl">Operatør / registreret af</label>
+        <input type="text" id="f-op" placeholder="Navn" list="op-list">
+        <datalist id="op-list"></datalist>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Varenr.</label>
+        <input type="text" id="f-vnr" placeholder="fx. WP-1042" list="vnr-list">
+        <datalist id="vnr-list"></datalist>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Maskine</label>
+        <select id="f-maskine">
+          <option value="">– vælg –</option>
+          <option>Emmeci MC2018</option>
+          <option>Hotfoil #1</option>
+          <option>Hotfoil #2</option>
+          <option>Hotfoil #3</option>
+          <option>Anden</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Folietype</label>
+        <select id="f-folietype">
+          <option value="">– vælg –</option>
+          <option>Kurz MSU</option>
+          <option>Pigmentfolie</option>
+          <option>Varmstempelfolie</option>
+          <option>Anden</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Foliefarve</label>
+        <select id="f-foliefarve">
+          <option value="">– vælg –</option>
+          <option>Guld</option>
+          <option>Sølv</option>
+          <option>Sort</option>
+          <option>Hvid</option>
+          <option>Grøn (pigment)</option>
+          <option>Rød (pigment)</option>
+          <option>Blå (pigment)</option>
+          <option>Anden</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Kliché type</label>
+        <select id="f-kliche">
+          <option value="">– vælg –</option>
+          <option>Magnesium</option>
+          <option>Messing</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Fejltype / årsag</label>
+        <select id="f-fejltype">
+          <option value="">– vælg –</option>
+          <option>Folie afskalning</option>
+          <option>Kantbrud / ujævn kant</option>
+          <option>Manglende dækning</option>
+          <option>Forkert placering</option>
+          <option>Farvefejl</option>
+          <option>Papir-/materialefejl</option>
+          <option>Maskinstop</option>
+          <option>Klichéfejl</option>
+          <option>Andet</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Antal fejl / spild (stk.)</label>
+        <input type="number" id="f-antal" min="1" placeholder="fx. 24">
+      </div>
+      <div class="form-group">
+        <label class="lbl">Batch nr.</label>
+        <input type="text" id="f-batch" placeholder="fx. B2024-042" list="batch-list">
+        <datalist id="batch-list"></datalist>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Status</label>
+        <select id="f-status">
+          <option value="open">Åben – afventer handling</option>
+          <option value="progress">I gang</option>
+          <option value="closed">Lukket / løst</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="lbl">Beskrivelse / årsagshypotese</label>
+        <textarea id="f-note" placeholder="Beskriv fejlen, hvad blev observeret, eventuel årsagshypotese..."></textarea>
+      </div>
+      <div class="form-group full">
+        <label class="lbl">Foto (valgfrit – maks. 4 billeder)</label>
+        <input type="file" id="f-foto" accept="image/*" multiple style="background:#fff;padding:6px;">
+        <div class="photo-grid" id="foto-preview"></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:12px;align-items:center;">
+      <button class="btn btn-primary" onclick="gemStop()">Gem stop-rapport</button>
+      <span id="form-err" style="color:var(--red);font-size:.82rem;"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div class="page" id="page-dash">
+  <div class="kpi-strip" id="kpi-strip"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Pareto – fejltype</div>
+      <div class="chart-container" style="height:220px;"><canvas id="ch-fejl"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pareto – varenr.</div>
+      <div class="chart-container" style="height:220px;"><canvas id="ch-vnr"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pareto – foliefarve</div>
+      <div class="chart-container" style="height:220px;"><canvas id="ch-farve"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Åbne sager pr. maskine</div>
+      <div class="chart-container" style="height:220px;"><canvas id="ch-maskine"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TREND ══ -->
+<div class="page" id="page-trend">
+  <div class="card">
+    <div class="row-flex" style="margin-bottom:16px;">
+      <div class="card-title" style="margin-bottom:0;">Fejl over tid</div>
+      <div class="spacer"></div>
+      <div class="toggle-group">
+        <button class="active" onclick="setTrendPeriod('uge',this)">Uge</button>
+        <button onclick="setTrendPeriod('maaned',this)">Måned</button>
+      </div>
+    </div>
+    <div class="chart-container" style="height:260px;"><canvas id="ch-trend"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Maskin-heatmap – fejl pr. maskine × fejltype</div>
+    <div id="heatmap-container"></div>
+  </div>
+</div>
+
+<!-- ══ ANALYSE ══ -->
+<div class="page" id="page-analyse">
+  <div class="card">
+    <div class="card-title">Kombinations-analyse – varenr. × foliefarve</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Antal stop pr. kombination. Mørkere = flere stop.</p>
+    <div id="combo-container" class="tbl-wrap"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Top 10 – varenr. med flest spild (stk.)</div>
+    <div class="chart-container" style="height:240px;"><canvas id="ch-spild"></canvas></div>
+  </div>
+</div>
+
+<!-- ══ AI ANALYSE ══ -->
+<div class="page" id="page-ai">
+  <div class="card">
+    <div class="row-flex" style="margin-bottom:6px;">
+      <div class="card-title" style="margin-bottom:0;">AI-kvalitetsanalyse</div>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:20px;">AI gennemgår alle dine stop-data og identificerer de største udfordringer, mønstre og foreslår konkrete handlinger – rangeret efter prioritet.</p>
+
+    <div class="ai-scope">
+      <div>
+        <label>Periode</label><br>
+        <select id="ai-periode">
+          <option value="0">Alle data</option>
+          <option value="7">Seneste 7 dage</option>
+          <option value="30">Seneste 30 dage</option>
+          <option value="90">Seneste 90 dage</option>
+        </select>
+      </div>
+      <div>
+        <label>Fokus</label><br>
+        <select id="ai-fokus">
+          <option value="alt">Alt – generel analyse</option>
+          <option value="varenr">Varenr. / produkter</option>
+          <option value="maskine">Maskiner</option>
+          <option value="materiale">Materialer & batch</option>
+          <option value="folie">Folietype & farve</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="ai-btn" id="ai-btn" onclick="køreAI()">
+      <div class="ai-spinner" id="ai-spin"></div>
+      <span id="ai-btn-txt">🔍 Analysér mine kvalitetsdata</span>
+    </button>
+
+    <div class="ai-result" id="ai-result"></div>
+  </div>
+</div>
+
+
+<!-- ══ OVERBLIK ══ -->
+<div class="page" id="page-overblik">
+
+  <!-- Alarmbånd -->
+  <div id="alarm-strip" style="margin-bottom:16px;"></div>
+
+  <!-- Top 3 problemer -->
+  <div class="card" style="border-left:4px solid var(--red);">
+    <div class="card-title">🔴 Arbejd med disse først</div>
+    <div id="top-problemer" style="display:grid;gap:10px;"></div>
+  </div>
+
+  <!-- Fejltype visuelt overblik -->
+  <div class="card">
+    <div class="card-title">Fejltyper – visuel prioritering</div>
+    <div id="fejl-visual" style="display:grid;gap:8px;margin-top:4px;"></div>
+  </div>
+
+  <!-- Varenr. × Kliché matrix -->
+  <div class="card">
+    <div class="card-title">Varenr. × Klichétype – stop-tæller</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px;">Rød = mange stop · Grå = ingen stop</p>
+    <div id="vnr-kliche-matrix" class="tbl-wrap"></div>
+  </div>
+
+  <!-- Batch radar -->
+  <div class="card">
+    <div class="card-title">Batch-radar – mistænkte batches</div>
+    <div id="batch-radar" style="display:grid;gap:8px;"></div>
+  </div>
+
+</div>
+
+<div class="page" id="page-log">
+  <div class="card" style="padding-bottom:12px;">
+    <div class="row-flex" style="margin-bottom:14px;">
+      <div class="card-title" style="margin-bottom:0;">Hændelseslog</div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" onclick="eksporterCSV()" style="font-size:.82rem;padding:7px 16px;">Eksporter CSV</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="filter-search" placeholder="Søg…" oninput="renderLog()" style="width:180px;">
+      <select id="filter-maskine" onchange="renderLog()">
+        <option value="">Alle maskiner</option>
+        <option>Emmeci MC2018</option><option>Hotfoil #1</option><option>Hotfoil #2</option><option>Hotfoil #3</option><option>Anden</option>
+      </select>
+      <select id="filter-fejltype" onchange="renderLog()">
+        <option value="">Alle fejltyper</option>
+        <option>Folie afskalning</option><option>Kantbrud / ujævn kant</option><option>Manglende dækning</option>
+        <option>Forkert placering</option><option>Farvefejl</option><option>Papir-/materialefejl</option>
+        <option>Maskinstop</option><option>Klichéfejl</option><option>Andet</option>
+      </select>
+      <select id="filter-status" onchange="renderLog()">
+        <option value="">Alle statuser</option>
+        <option value="open">Åben</option>
+        <option value="progress">I gang</option>
+        <option value="closed">Lukket</option>
+      </select>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortLog('dato')">Dato ↕</th>
+            <th onclick="sortLog('vnr')">Varenr. ↕</th>
+            <th onclick="sortLog('batch')">Batch ↕</th>
+            <th onclick="sortLog('maskine')">Maskine ↕</th>
+            <th onclick="sortLog('fejltype')">Fejltype ↕</th>
+            <th>Folie</th>
+            <th>Kliché</th>
+            <th onclick="sortLog('antal')">Antal ↕</th>
+            <th>Status</th>
+            <th>Foto</th>
+            <th>Operatør</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="log-tbody"></tbody>
+      </table>
+    </div>
+    <div id="log-empty" class="empty" style="display:none;">Ingen registreringer endnu.</div>
+  </div>
+</div>
+
+<!-- ══ INDSTILLINGER ══ -->
+<div class="page" id="page-ops">
+  <div class="card">
+    <div class="card-title">KPI-målsætninger</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px;">Sæt grænser for hvornår KPI vises rød. Gemmes automatisk.</p>
+    <div class="kpi-settings">
+      <div class="kpi-set-item">
+        <label class="lbl">Max stop pr. uge</label>
+        <input type="number" id="kpi-uge" min="1" placeholder="fx. 10">
+      </div>
+      <div class="kpi-set-item">
+        <label class="lbl">Max spild pr. uge (stk.)</label>
+        <input type="number" id="kpi-spild" min="1" placeholder="fx. 200">
+      </div>
+      <div class="kpi-set-item">
+        <label class="lbl">Max åbne sager</label>
+        <input type="number" id="kpi-aabne" min="1" placeholder="fx. 5">
+      </div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="gemKPI()">Gem KPI-mål</button>
+    <span id="kpi-saved" style="margin-left:12px;font-size:.82rem;color:var(--green);opacity:0;transition:opacity .3s;">Gemt ✓</span>
+  </div>
+  <div class="card">
+    <div class="card-title">AI-konfiguration</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">Din Anthropic API-nøgle bruges til AI-analyse og scan-funktion. Den gemmes lokalt i browseren.</p>
+    <div class="form-group" style="max-width:480px;">
+      <label class="lbl">Anthropic API-nøgle</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+    </div>
+    <button class="btn btn-primary" style="margin-top:12px;" onclick="gemApiKey()">Gem API-nøgle</button>
+    <span id="apikey-saved" style="margin-left:12px;font-size:.82rem;color:var(--green);opacity:0;transition:opacity .3s;">Gemt ✓</span>
+  </div>
+  <div class="card">
+    <div class="card-title">Dataexport & reset</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="eksporterCSV()">Eksporter alle data (CSV)</button>
+      <button class="btn btn-ghost" onclick="importerCSV()" style="color:var(--navy);">Importer CSV</button>
+      <input type="file" id="import-file" accept=".csv" style="display:none;" onchange="handleImport(event)">
+      <button class="btn btn-ghost" onclick="if(confirm('Slet AL data?')){data=[];save();alert('Data slettet.');}">Slet alle data</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- Modal til fotos -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-inner">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Stop-rapport gemt ✓</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+const KEY = 'wp_stopper_v2';
+const KEY_KPI = 'wp_kpi_v2';
+let data = JSON.parse(localStorage.getItem(KEY) || '[]');
+let kpiGoals = JSON.parse(localStorage.getItem(KEY_KPI) || '{"uge":10,"spild":200,"aabne":5}');
+let sortField='dato', sortAsc=false;
+let trendPeriod='uge';
+let pendingPhotos=[];
+let charts={};
+
+const KEY_API = 'wp_apikey_v2';
+function gemApiKey(){
+  const k=document.getElementById('api-key-input').value.trim();
+  if(k) localStorage.setItem(KEY_API,k);
+  const s=document.getElementById('apikey-saved');
+  s.style.opacity=1; setTimeout(()=>s.style.opacity=0,2000);
+}
+function getApiKey(){ return localStorage.getItem(KEY_API)||''; }
+
+function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+
+// ── Init ──────────────────────────────────────────────────────────────────
+window.addEventListener('load', ()=>{
+  setNow();
+  loadKPISettings();
+  refreshAutocomplete();
+  const savedKey=localStorage.getItem(KEY_API);
+  if(savedKey) document.getElementById('api-key-input').value=savedKey;
+});
+
+function setNow(){
+  const now=new Date(); now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  document.getElementById('f-dato').value=now.toISOString().slice(0,16);
+}
+
+function loadKPISettings(){
+  document.getElementById('kpi-uge').value=kpiGoals.uge||'';
+  document.getElementById('kpi-spild').value=kpiGoals.spild||'';
+  document.getElementById('kpi-aabne').value=kpiGoals.aabne||'';
+}
+
+function gemKPI(){
+  kpiGoals={
+    uge: +document.getElementById('kpi-uge').value||99,
+    spild: +document.getElementById('kpi-spild').value||9999,
+    aabne: +document.getElementById('kpi-aabne').value||99
+  };
+  localStorage.setItem(KEY_KPI,JSON.stringify(kpiGoals));
+  const s=document.getElementById('kpi-saved');
+  s.style.opacity=1; setTimeout(()=>s.style.opacity=0,2000);
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='overblik') renderOverblik();
+  if(id==='dash') renderDash();
+  if(id==='trend') renderTrend();
+  if(id==='analyse') renderAnalyse();
+  if(id==='log') renderLog();
+}
+
+// ── Photo handling ─────────────────────────────────────────────────────────
+document.getElementById('f-foto').addEventListener('change', function(e){
+  const files=[...e.target.files].slice(0,4-pendingPhotos.length);
+  files.forEach(f=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      pendingPhotos.push(ev.target.result);
+      renderFotoPreview();
+    };
+    reader.readAsDataURL(f);
+  });
+  this.value='';
+});
+
+function renderFotoPreview(){
+  const el=document.getElementById('foto-preview');
+  el.innerHTML=pendingPhotos.map((src,i)=>`
+    <div class="photo-thumb">
+      <img src="${src}">
+      <button class="del-photo" onclick="pendingPhotos.splice(${i},1);renderFotoPreview()">✕</button>
+    </div>`).join('');
+}
+
+// ── Gem stop ──────────────────────────────────────────────────────────────
+function gemStop(){
+  const err=document.getElementById('form-err');
+  const vnr=document.getElementById('f-vnr').value.trim();
+  const fejl=document.getElementById('f-fejltype').value;
+  const antal=document.getElementById('f-antal').value;
+  if(!vnr||!fejl||!antal){err.textContent='Udfyld mindst varenr., fejltype og antal.';return;}
+  err.textContent='';
+  const rec={
+    id:Date.now(),
+    dato:document.getElementById('f-dato').value,
+    op:document.getElementById('f-op').value.trim()||'–',
+    vnr,
+    maskine:document.getElementById('f-maskine').value||'–',
+    batch:document.getElementById('f-batch').value.trim()||'–',
+    folietype:document.getElementById('f-folietype').value||'–',
+    foliefarve:document.getElementById('f-foliefarve').value||'–',
+    kliche:document.getElementById('f-kliche').value||'–',
+    fejltype:fejl,
+    antal:parseInt(antal),
+    status:document.getElementById('f-status').value,
+    note:document.getElementById('f-note').value.trim(),
+    fotos:[...pendingPhotos]
+  };
+  data.push(rec);
+  save();
+  pendingPhotos=[];
+  renderFotoPreview();
+  document.getElementById('f-foto').value='';
+  ['f-vnr','f-antal','f-note','f-batch'].forEach(id=>document.getElementById(id).value='');
+  ['f-folietype','f-foliefarve','f-fejltype','f-maskine','f-kliche'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-status').value='open';
+  setNow();
+  refreshAutocomplete();
+  showToast();
+}
+
+function showToast(){
+  const t=document.getElementById('toast');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function refreshAutocomplete(){
+  const vnrs=[...new Set(data.map(r=>r.vnr))];
+  const ops=[...new Set(data.map(r=>r.op).filter(o=>o!=='–'))];
+  const batches=[...new Set(data.map(r=>r.batch).filter(b=>b&&b!=='–'))];
+  document.getElementById('vnr-list').innerHTML=vnrs.map(v=>`<option value="${v}">`).join('');
+  document.getElementById('op-list').innerHTML=ops.map(o=>`<option value="${o}">`).join('');
+  document.getElementById('batch-list').innerHTML=batches.map(b=>`<option value="${b}">`).join('');
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function topN(arr,field,n=10){
+  const cnt={};
+  arr.forEach(r=>{const v=r[field]||'–';cnt[v]=(cnt[v]||0)+1;});
+  return Object.entries(cnt).map(([k,c])=>({key:k,count:c})).sort((a,b)=>b.count-a.count).slice(0,n);
+}
+
+function topNSpild(arr,field,n=10){
+  const cnt={};
+  arr.forEach(r=>{const v=r[field]||'–';cnt[v]=(cnt[v]||0)+r.antal;});
+  return Object.entries(cnt).map(([k,c])=>({key:k,count:c})).sort((a,b)=>b.count-a.count).slice(0,n);
+}
+
+const COLORS=['#1a2e44','#2e4f6e','#3d6b93','#c8973a','#e0b96a','#e67e22','#27ae60','#c0392b','#8e44ad','#16a085'];
+
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function makeBarChart(canvasId, labels, values, color='#1a2e44'){
+  destroyChart(canvasId);
+  const ctx=document.getElementById(canvasId);
+  if(!ctx) return;
+  charts[canvasId]=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{data:values,backgroundColor:color,borderRadius:4}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#e8eef4'}},
+        x:{ticks:{font:{size:10},maxRotation:35}}
+      }
+    }
+  });
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+// ── OVERBLIK ─────────────────────────────────────────────────────────────
+function renderOverblik(){
+  if(!data.length){
+    ['alarm-strip','top-problemer','fejl-visual','vnr-kliche-matrix','batch-radar'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.innerHTML='<div class="empty">Ingen data endnu – registrer de første stop-hændelser.</div>';
+    });
+    return;
+  }
+
+  const nu=new Date();
+  const uge=new Date(nu-7*24*3600*1000);
+  const mnd=new Date(nu-30*24*3600*1000);
+  const sisteUge=data.filter(r=>new Date(r.dato)>=uge);
+  const sisteMnd=data.filter(r=>new Date(r.dato)>=mnd);
+
+  // ── Alarmbånd ────────────────────────────────────────────────────────
+  const alarmer=[];
+  const aabne=data.filter(r=>r.status==='open').length;
+  if(aabne>kpiGoals.aabne) alarmer.push({cls:'rod',icon:'🚨',title:`${aabne} åbne sager – over grænse (${kpiGoals.aabne})`,sub:'Afslut eller eskalér åbne sager hurtigst muligt'});
+  if(sisteUge.length>kpiGoals.uge) alarmer.push({cls:'rod',icon:'📈',title:`${sisteUge.length} stop denne uge – over grænse (${kpiGoals.uge})`,sub:'Ugentlig stop-rate er for høj'});
+  const spildUge=sisteUge.reduce((s,r)=>s+r.antal,0);
+  if(spildUge>kpiGoals.spild) alarmer.push({cls:'orange',icon:'⚠️',title:`${spildUge} stk. spild denne uge – over grænse (${kpiGoals.spild})`,sub:'Spildniveauet kræver øjeblikkelig handling'});
+
+  // Gentagne varenr – samme vnr 3+ gange seneste 30 dage
+  const vnrCnt={}; sisteMnd.forEach(r=>{vnrCnt[r.vnr]=(vnrCnt[r.vnr]||0)+1;});
+  const repeatVnr=Object.entries(vnrCnt).filter(([,c])=>c>=3).sort((a,b)=>b[1]-a[1]);
+  if(repeatVnr.length) alarmer.push({cls:'orange',icon:'🔁',title:`Gentagne fejl: ${repeatVnr[0][0]} (${repeatVnr[0][1]}× seneste 30 dage)`,sub:'Samme varenr. optræder systematisk – strukturelt problem'});
+
+  // Batch med 2+ fejl
+  const batchCnt={}; data.filter(r=>r.batch&&r.batch!=='–').forEach(r=>{batchCnt[r.batch]=(batchCnt[r.batch]||0)+1;});
+  const badBatch=Object.entries(batchCnt).filter(([,c])=>c>=2).sort((a,b)=>b[1]-a[1]);
+  if(badBatch.length) alarmer.push({cls:'orange',icon:'📦',title:`Mistænkt batch: ${badBatch[0][0]} (${badBatch[0][1]} stop)`,sub:'Mulig materialevariasion – sammenlign med testbatch'});
+
+  document.getElementById('alarm-strip').innerHTML = alarmer.length
+    ? alarmer.map(a=>`<div class="alarm-card ${a.cls}"><div class="alarm-icon">${a.icon}</div><div><div class="alarm-title">${a.title}</div><div class="alarm-sub">${a.sub}</div></div></div>`).join('')
+    : `<div class="alarm-card" style="background:var(--green-lt);border-color:#a9dfbf;"><div class="alarm-icon">✅</div><div><div class="alarm-title">Ingen aktive alarmer</div><div class="alarm-sub">Alle KPI-grænser overholdt</div></div></div>`;
+
+  // ── Top 3 problemer ───────────────────────────────────────────────────
+  // Score = stop-count × 2 + spild/10 + (gentaget?) × 5
+  const problemMap={};
+  data.forEach(r=>{
+    const k=`${r.fejltype}||${r.vnr}`;
+    if(!problemMap[k]) problemMap[k]={fejltype:r.fejltype,vnr:r.vnr,kliche:new Set(),farve:new Set(),stop:0,spild:0,batch:new Set()};
+    const p=problemMap[k];
+    p.stop++; p.spild+=r.antal;
+    if(r.kliche&&r.kliche!=='–') p.kliche.add(r.kliche);
+    if(r.foliefarve&&r.foliefarve!=='–') p.farve.add(r.foliefarve);
+    if(r.batch&&r.batch!=='–') p.batch.add(r.batch);
+  });
+  const scored=Object.values(problemMap).map(p=>({...p,score:p.stop*2+p.spild/10})).sort((a,b)=>b.score-a.score).slice(0,3);
+  const pClass=['p1','p2','p3'];
+  const pLabel=['#1','#2','#3'];
+  document.getElementById('top-problemer').innerHTML = scored.length
+    ? scored.map((p,i)=>`
+      <div class="problem-card ${pClass[i]}">
+        <div class="problem-rank ${pClass[i]}">${pLabel[i]}</div>
+        <div class="problem-body">
+          <div class="problem-title">${p.fejltype||'Ukendt fejl'} – ${p.vnr}</div>
+          <div class="problem-tags">
+            ${[...p.kliche].map(k=>`<span class="tag">🔧 ${k}</span>`).join('')}
+            ${[...p.farve].map(f=>`<span class="tag">🎨 ${f}</span>`).join('')}
+            ${[...p.batch].map(b=>`<span class="tag">📦 ${b}</span>`).join('')}
+          </div>
+          <div class="problem-desc">${p.stop} stop · ${p.spild} stk. spild</div>
+        </div>
+        <div class="problem-count"><div class="big">${p.stop}</div><div class="lbl">stop</div></div>
+      </div>`).join('')
+    : '<div class="empty">Ikke nok data endnu.</div>';
+
+  // ── Fejltype søjler ───────────────────────────────────────────────────
+  const fejlCnt={}; data.forEach(r=>{fejlCnt[r.fejltype]=(fejlCnt[r.fejltype]||0)+1;});
+  const fejlSorted=Object.entries(fejlCnt).sort((a,b)=>b[1]-a[1]);
+  const fejlMax=fejlSorted[0]?.[1]||1;
+  const total=data.length;
+  const barColors=['#c0392b','#e67e22','#f39c12','#27ae60','#2980b9','#8e44ad','#16a085','#d35400'];
+  document.getElementById('fejl-visual').innerHTML=fejlSorted.map(([fejl,cnt],i)=>{
+    const w=Math.round(cnt/fejlMax*100);
+    const pct=Math.round(cnt/total*100);
+    return `<div class="fejl-bar-row">
+      <div class="fejl-bar-label">${fejl}</div>
+      <div class="fejl-bar-track">
+        <div class="fejl-bar-fill" style="width:${w}%;background:${barColors[i%barColors.length]};">
+          <span class="fejl-bar-val">${cnt} stop</span>
+        </div>
+      </div>
+      <div class="fejl-bar-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // ── Varenr × Klichétype matrix ────────────────────────────────────────
+  const vnrs=[...new Set(data.map(r=>r.vnr))].slice(0,10);
+  const klicheTyper=['Magnesium','Messing'];
+  const mat={};
+  vnrs.forEach(v=>{mat[v]={};klicheTyper.forEach(k=>{mat[v][k]=0;});});
+  data.forEach(r=>{if(mat[r.vnr]&&r.kliche&&r.kliche!=='–') mat[r.vnr][r.kliche]=(mat[r.vnr][r.kliche]||0)+1;});
+  const matMax=Math.max(...vnrs.flatMap(v=>klicheTyper.map(k=>mat[v][k]||0)),1);
+  let matHtml=`<table><thead><tr><th>Varenr.</th>${klicheTyper.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>`;
+  vnrs.forEach(v=>{
+    matHtml+=`<tr><td><strong>${v}</strong></td>`;
+    klicheTyper.forEach(k=>{
+      const val=mat[v][k]||0;
+      const t=val/matMax;
+      const bg=val===0?'#f0f4f8':t<.4?'#fdd8b0':t<.7?'#f0a070':'#c0392b';
+      const color=t>.5?'#fff':'#1a2e44';
+      matHtml+=`<td><div class="matrix-cell" style="background:${bg};color:${color};">${val||'·'}</div></td>`;
+    });
+    matHtml+='</tr>';
+  });
+  matHtml+='</tbody></table>';
+  document.getElementById('vnr-kliche-matrix').innerHTML=vnrs.length?matHtml:'<div class="empty">Ingen data med klichétype registreret.</div>';
+
+  // ── Batch radar ────────────────────────────────────────────────────────
+  const batchData=Object.entries(batchCnt).filter(([b])=>b!=='–').sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const bMax=batchData[0]?.[1]||1;
+  document.getElementById('batch-radar').innerHTML=batchData.length
+    ? batchData.map(([b,c])=>`
+      <div class="batch-row">
+        <div class="batch-name">📦 ${b}</div>
+        <div class="batch-bar-track"><div class="batch-bar-fill" style="width:${Math.round(c/bMax*100)}%"></div></div>
+        <div class="batch-count">${c} stop</div>
+      </div>`).join('')
+    : '<div class="empty">Ingen batch-numre registreret endnu.</div>';
+}
+
+function renderDash(){
+  // KPIs
+  const now=new Date();
+  const weekAgo=new Date(now-7*24*3600*1000);
+  const thisWeek=data.filter(r=>new Date(r.dato)>=weekAgo);
+  const stopUge=thisWeek.length;
+  const spildUge=thisWeek.reduce((s,r)=>s+r.antal,0);
+  const aabne=data.filter(r=>r.status==='open'||r.status==='progress').length;
+  const topFejl=topN(data,'fejltype',1)[0]?.key||'–';
+  const topVnr=topN(data,'vnr',1)[0]?.key||'–';
+
+  const stopKlass=stopUge>kpiGoals.uge?'red':stopUge>kpiGoals.uge*.7?'orange':'green';
+  const spildKlass=spildUge>kpiGoals.spild?'red':spildUge>kpiGoals.spild*.7?'orange':'green';
+  const aabneKlass=aabne>kpiGoals.aabne?'red':aabne>kpiGoals.aabne*.7?'orange':'green';
+
+  document.getElementById('kpi-strip').innerHTML=`
+    <div class="kpi ${stopKlass}">
+      <div class="val">${stopUge}</div>
+      <div class="lbl">Stop denne uge</div>
+      <div class="sub" style="color:var(--muted)">Mål: max ${kpiGoals.uge}</div>
+    </div>
+    <div class="kpi ${spildKlass}">
+      <div class="val">${spildUge}</div>
+      <div class="lbl">Spild denne uge (stk.)</div>
+      <div class="sub" style="color:var(--muted)">Mål: max ${kpiGoals.spild}</div>
+    </div>
+    <div class="kpi ${aabneKlass}">
+      <div class="val">${aabne}</div>
+      <div class="lbl">Åbne sager</div>
+      <div class="sub" style="color:var(--muted)">Mål: max ${kpiGoals.aabne}</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="font-size:1.1rem;margin-top:4px;">${topFejl}</div>
+      <div class="lbl">Hyppigste fejltype</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="font-size:1.3rem;margin-top:4px;">${topVnr}</div>
+      <div class="lbl">Varenr. flest stop</div>
+    </div>`;
+
+  // Charts
+  const fejl=topN(data,'fejltype');
+  makeBarChart('ch-fejl',fejl.map(x=>x.key),fejl.map(x=>x.count),'#1a2e44');
+  const vnr=topN(data,'vnr');
+  makeBarChart('ch-vnr',vnr.map(x=>x.key),vnr.map(x=>x.count),'#c8973a');
+  const farve=topN(data,'foliefarve');
+  makeBarChart('ch-farve',farve.map(x=>x.key),farve.map(x=>x.count),'#2e4f6e');
+
+  // Maskine åbne
+  const aabneData=data.filter(r=>r.status==='open'||r.status==='progress');
+  const mach=topN(aabneData,'maskine');
+  makeBarChart('ch-maskine',mach.map(x=>x.key),mach.map(x=>x.count),'#c0392b');
+}
+
+// ── TREND ─────────────────────────────────────────────────────────────────
+function setTrendPeriod(p,btn){
+  trendPeriod=p;
+  document.querySelectorAll('.toggle-group button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrend();
+}
+
+function renderTrend(){
+  // Group by week or month
+  const grouped={};
+  data.forEach(r=>{
+    if(!r.dato) return;
+    const d=new Date(r.dato);
+    let key;
+    if(trendPeriod==='uge'){
+      const jan1=new Date(d.getFullYear(),0,1);
+      const wk=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+      key=`${d.getFullYear()}-U${String(wk).padStart(2,'0')}`;
+    } else {
+      key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    }
+    if(!grouped[key]) grouped[key]={stop:0,spild:0};
+    grouped[key].stop++;
+    grouped[key].spild+=r.antal;
+  });
+  const labels=Object.keys(grouped).sort();
+  const stops=labels.map(k=>grouped[k].stop);
+  const spild=labels.map(k=>grouped[k].spild);
+
+  destroyChart('ch-trend');
+  const ctx=document.getElementById('ch-trend');
+  if(!ctx) return;
+  charts['ch-trend']=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Antal stop',data:stops,borderColor:'#1a2e44',backgroundColor:'rgba(26,46,68,.1)',tension:.3,fill:true,pointRadius:4},
+        {label:'Spild (stk.)',data:spild,borderColor:'#c8973a',backgroundColor:'rgba(200,151,58,.08)',tension:.3,fill:true,yAxisID:'y2',pointRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{size:10}}}},
+      scales:{
+        y:{beginAtZero:true,title:{display:true,text:'Stop'},ticks:{font:{size:10}},grid:{color:'#e8eef4'}},
+        y2:{beginAtZero:true,position:'right',title:{display:true,text:'Spild (stk.)'},ticks:{font:{size:10}},grid:{display:false}},
+        x:{ticks:{font:{size:10},maxRotation:40}}
+      }
+    }
+  });
+
+  // Heatmap: maskine × fejltype
+  const maskiner=[...new Set(data.map(r=>r.maskine))].filter(m=>m!=='–');
+  const fejltyper=[...new Set(data.map(r=>r.fejltype))].filter(f=>f);
+  if(!maskiner.length||!fejltyper.length){document.getElementById('heatmap-container').innerHTML='<div class="empty">Ikke nok data til heatmap endnu.</div>';return;}
+
+  // Count matrix
+  const matrix={};
+  maskiner.forEach(m=>{matrix[m]={};fejltyper.forEach(f=>{matrix[m][f]=0;});});
+  data.forEach(r=>{if(matrix[r.maskine]) matrix[r.maskine][r.fejltype]=(matrix[r.maskine][r.fejltype]||0)+1;});
+  const maxVal=Math.max(...maskiner.flatMap(m=>fejltyper.map(f=>matrix[m][f]||0)),1);
+
+  function heatColor(v){
+    if(v===0) return '#f0f4f8';
+    const t=v/maxVal;
+    if(t<.33) return '#aed6f1';
+    if(t<.66) return '#e67e22';
+    return '#c0392b';
+  }
+
+  let html=`<div class="heatmap-col-labels">${fejltyper.map(f=>`<div class="heatmap-col-label">${f.substring(0,12)}</div>`).join('')}</div>`;
+  maskiner.forEach(m=>{
+    html+=`<div class="heatmap-row"><div class="heatmap-label">${m}</div><div class="heatmap-cells">`;
+    fejltyper.forEach(f=>{
+      const v=matrix[m][f]||0;
+      html+=`<div class="heatmap-cell" style="background:${heatColor(v)}" title="${m} × ${f}: ${v}">${v||''}</div>`;
+    });
+    html+=`</div></div>`;
+  });
+  document.getElementById('heatmap-container').innerHTML=html;
+}
+
+// ── ANALYSE ───────────────────────────────────────────────────────────────
+function renderAnalyse(){
+  // Combo: varenr × foliefarve
+  const vnrs=[...new Set(data.map(r=>r.vnr))].slice(0,12);
+  const farver=[...new Set(data.map(r=>r.foliefarve))].filter(f=>f!=='–');
+  const matrix={};
+  vnrs.forEach(v=>{matrix[v]={};farver.forEach(f=>{matrix[v][f]=0;});});
+  data.forEach(r=>{if(matrix[r.vnr]!==undefined) matrix[r.vnr][r.foliefarve]=(matrix[r.vnr][r.foliefarve]||0)+1;});
+  const maxVal=Math.max(...vnrs.flatMap(v=>farver.map(f=>matrix[v][f]||0)),1);
+
+  function comboColor(v){
+    if(v===0) return '#f0f4f8';
+    const t=v/maxVal;
+    const r=Math.round(26+(168*t)); const g=Math.round(46+(0)); const b=Math.round(68+(-68*t));
+    return `rgb(${Math.min(255,Math.round(26+229*t))},${Math.round(46*(1-t))},${Math.round(68*(1-t))})`;
+  }
+
+  if(!vnrs.length||!farver.length){document.getElementById('combo-container').innerHTML='<div class="empty">Ikke nok data endnu.</div>';return;}
+
+  let html=`<table><thead><tr><th>Varenr.</th>${farver.map(f=>`<th>${f}</th>`).join('')}</tr></thead><tbody>`;
+  vnrs.forEach(v=>{
+    html+=`<tr><td><strong>${v}</strong></td>`;
+    farver.forEach(f=>{
+      const val=matrix[v][f]||0;
+      const t=val/maxVal;
+      const bg=val===0?'#f0f4f8':`rgba(26,46,68,${0.15+t*0.85})`;
+      const color=t>0.5?'#fff':'#1a2e44';
+      html+=`<td><div class="combo-cell" style="background:${bg};color:${color}">${val||'·'}</div></td>`;
+    });
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('combo-container').innerHTML=html;
+
+  // Top spild
+  const spild=topNSpild(data,'vnr');
+  destroyChart('ch-spild');
+  const ctx=document.getElementById('ch-spild');
+  if(!ctx) return;
+  charts['ch-spild']=new Chart(ctx,{
+    type:'bar',
+    data:{labels:spild.map(x=>x.key),datasets:[{data:spild.map(x=>x.count),backgroundColor:'#c0392b',borderRadius:4}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#e8eef4'}},y:{ticks:{font:{size:10}}}}
+    }
+  });
+}
+
+// ── LOG ───────────────────────────────────────────────────────────────────
+function renderLog(){
+  const search=document.getElementById('filter-search').value.toLowerCase();
+  const maskine=document.getElementById('filter-maskine').value;
+  const fejltype=document.getElementById('filter-fejltype').value;
+  const status=document.getElementById('filter-status').value;
+
+  let rows=data.filter(r=>{
+    const txt=(r.vnr+r.fejltype+r.note+r.op+r.folietype+r.foliefarve).toLowerCase();
+    return(!search||txt.includes(search))&&(!maskine||r.maskine===maskine)&&(!fejltype||r.fejltype===fejltype)&&(!status||r.status===status);
+  });
+  rows.sort((a,b)=>{
+    let av=a[sortField],bv=b[sortField];
+    if(sortField==='antal'){av=+av;bv=+bv;}
+    if(av<bv) return sortAsc?-1:1;
+    if(av>bv) return sortAsc?1:-1;
+    return 0;
+  });
+
+  const tbody=document.getElementById('log-tbody');
+  const empty=document.getElementById('log-empty');
+  if(!rows.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+
+  const statusLabel={open:'<span class="badge badge-open">Åben</span>',progress:'<span class="badge" style="background:#fff3cd;color:#856404;">I gang</span>',closed:'<span class="badge badge-closed">Lukket</span>'};
+
+  tbody.innerHTML=rows.map(r=>`
+    <tr>
+      <td style="white-space:nowrap;color:var(--muted);font-size:.78rem;">${(r.dato||'').replace('T',' ')}</td>
+      <td><strong>${r.vnr}</strong></td>
+      <td style="font-size:.82rem;">${r.batch||'–'}</td>
+      <td style="font-size:.82rem;">${r.maskine}</td>
+      <td><span class="badge badge-nok">${r.fejltype}</span></td>
+      <td style="font-size:.78rem;">${[r.folietype,r.foliefarve].filter(x=>x!=='–').join(' / ')||'–'}</td>
+      <td style="font-size:.82rem;">${r.kliche||'–'}</td>
+      <td style="font-weight:800;color:var(--red);">${r.antal}</td>
+      <td>${statusLabel[r.status]||'–'}</td>
+      <td>${r.fotos&&r.fotos.length?r.fotos.map((src,i)=>`<img class="photo-log-thumb" src="${src}" onclick="visFotos(${r.id})" title="Se foto">`).join(''):'–'}</td>
+      <td style="font-size:.8rem;">${r.op}</td>
+      <td style="display:flex;gap:4px;align-items:center;">
+        <button class="btn-danger-sm" onclick="editStatus(${r.id})">Status</button>
+        <button class="btn-danger-sm" onclick="sletRad(${r.id})">Slet</button>
+      </td>
+    </tr>`).join('');
+}
+
+function sortLog(f){if(sortField===f)sortAsc=!sortAsc;else{sortField=f;sortAsc=false;}renderLog();}
+
+function sletRad(id){if(!confirm('Slet hændelse?'))return;data=data.filter(r=>r.id!==id);save();renderLog();}
+
+function editStatus(id){
+  const r=data.find(d=>d.id===id);if(!r)return;
+  const s=prompt('Status (open/progress/closed):',r.status);
+  if(s&&['open','progress','closed'].includes(s)){r.status=s;save();renderLog();}
+}
+
+function visFotos(id){
+  const r=data.find(d=>d.id===id);if(!r||!r.fotos?.length)return;
+  document.getElementById('modal-title').textContent=`${r.vnr} – ${r.fejltype}`;
+  document.getElementById('modal-body').innerHTML=r.fotos.map(src=>`<img src="${src}" style="width:100%;border-radius:6px;margin-bottom:8px;">`).join('');
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(e){if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('show');}
+
+// ── AI ANALYSE ────────────────────────────────────────────────────────────
+async function køreAI(){
+  if(!data.length){alert('Ingen data at analysere endnu.');return;}
+
+  if(!getApiKey()){alert('Indtast din Anthropic API-nøgle under Indstillinger først.');return;}
+  const btn=document.getElementById('ai-btn');
+  const spin=document.getElementById('ai-spin');
+  const txt=document.getElementById('ai-btn-txt');
+  const result=document.getElementById('ai-result');
+
+  btn.disabled=true;
+  spin.classList.add('show');
+  txt.textContent='Analyserer…';
+  result.classList.remove('show');
+
+  // Filter by period
+  const dage=parseInt(document.getElementById('ai-periode').value);
+  const fokus=document.getElementById('ai-fokus').value;
+  let subset=data;
+  if(dage>0){
+    const cutoff=new Date(Date.now()-dage*24*3600*1000);
+    subset=data.filter(r=>new Date(r.dato)>=cutoff);
+  }
+  if(!subset.length){
+    result.innerHTML='<p style="color:var(--muted)">Ingen data i den valgte periode.</p>';
+    result.classList.add('show');
+    btn.disabled=false; spin.classList.remove('show'); txt.textContent='🔍 Analysér mine kvalitetsdata';
+    return;
+  }
+
+  // Build compact summary for AI (no photos to save tokens)
+  const clean=subset.map(r=>({
+    dato:r.dato?.slice(0,10),
+    vnr:r.vnr,
+    maskine:r.maskine,
+    folietype:r.folietype,
+    foliefarve:r.foliefarve,
+    fejltype:r.fejltype,
+    antal:r.antal,
+    batch:r.batch||'–',
+    status:r.status,
+    note:r.note?.slice(0,80)||''
+  }));
+
+  // Pre-compute stats to help AI
+  const totalStop=clean.length;
+  const totalSpild=clean.reduce((s,r)=>s+r.antal,0);
+  const topFejl=topNJS(clean,'fejltype',5);
+  const topVnr=topNJS(clean,'vnr',5);
+  const topMaskine=topNJS(clean,'maskine',5);
+  const topFarve=topNJS(clean,'foliefarve',5);
+  const topBatch=topNJS(clean,'batch',5);
+  const aabne=clean.filter(r=>r.status==='open').length;
+
+  const fokusInstr={
+    alt:'Lav en bred analyse på tværs af alle dimensioner.',
+    varenr:'Fokusér primært på hvilke varenumre der giver flest problemer og hvorfor.',
+    maskine:'Fokusér primært på maskinernes bidrag til kvalitetsproblemerne.',
+    materiale:'Fokusér primært på materialer, batch-numre og leverandørvariation.',
+    folie:'Fokusér primært på folietype og foliefarve som årsag til fejl.'
+  }[fokus];
+
+  const prompt=`Du er en Six Sigma kvalitetsekspert og CI-specialist hos Westpack A/S, der producerer smykkeæsker i pap med hotfoil-tryk. Du får produktionsdata fra deres kvalitetsstopper-system.
+
+STATISTIK OVERSIGT:
+- Periode: ${dage>0?`seneste ${dage} dage`:'alle data'}
+- Antal stop-hændelser: ${totalStop}
+- Samlet spild: ${totalSpild} stk.
+- Åbne sager: ${aabne}
+
+TOP FEJLTYPER: ${topFejl.map(x=>`${x.key}(${x.count})`).join(', ')}
+TOP VARENR: ${topVnr.map(x=>`${x.key}(${x.count})`).join(', ')}
+TOP MASKINER: ${topMaskine.map(x=>`${x.key}(${x.count})`).join(', ')}
+TOP FOLIEFARVER: ${topFarve.map(x=>`${x.key}(${x.count})`).join(', ')}
+TOP BATCH: ${topBatch.map(x=>`${x.key}(${x.count})`).join(', ')}
+
+RÅDATA (maks. 80 rækker):
+${JSON.stringify(clean.slice(0,80),null,0)}
+
+FOKUS: ${fokusInstr}
+
+Lav en struktureret kvalitetsanalyse på DANSK med følgende sektioner:
+
+## 🔴 Prioritet 1 – Kritiske problemer (skal løses nu)
+Identificér 2-3 de største problemer med konkret data-dokumentation. Angiv fejlrate, mønstre og hvilke kombinationer (fx varenr × foliefarve × batch) der er mest problematiske.
+
+## 🟠 Prioritet 2 – Vigtige problemer (løs inden for 2 uger)
+2-3 sekundære problemer der skal adresseres.
+
+## 🟢 Prioritet 3 – Observationer & forebyggelse
+Mønstre der endnu ikke er kritiske men bør overvåges.
+
+## 📋 Anbefalede handlinger
+Konkrete næste skridt rangeret efter Six Sigma-logik (mål-analyser-forbedr). Vær specifik – ikke generel.
+
+## ⚠️ Datagrundlag
+Kort vurdering af om datagrundlaget er tilstrækkeligt til at drage sikre konklusioner, og hvad der mangler.
+
+Skriv professionelt, direkte og handlingsorienteret. Undgå AI-klichéer. Brug tal fra dataene.`;
+
+  try {
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-iab':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1500,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const json=await resp.json();
+    const raw=json.content?.find(b=>b.type==='text')?.text||'Ingen respons modtaget.';
+
+    // Render markdown-ish output
+    const html=raw
+      .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+      .replace(/^### (.+)$/gm,'<h4 style="font-weight:700;margin:12px 0 6px;">$1</h4>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/^- (.+)$/gm,'<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/g,'<ul>$&</ul>')
+      .replace(/🔴 Prioritet 1(.+?)(?=<h3>|$)/gs,'<div class="priority-1">🔴 Prioritet 1$1</div>')
+      .replace(/🟠 Prioritet 2(.+?)(?=<h3>|$)/gs,'<div class="priority-2">🟠 Prioritet 2$1</div>')
+      .replace(/🟢 Prioritet 3(.+?)(?=<h3>|$)/gs,'<div class="priority-3">🟢 Prioritet 3$1</div>')
+      .replace(/\n\n/g,'</p><p>')
+      .replace(/\n/g,'<br>');
+
+    result.innerHTML=html+`<div class="ai-meta">Analyse baseret på ${totalStop} hændelser · ${new Date().toLocaleString('da-DK')}</div>`;
+    result.classList.add('show');
+  } catch(e){
+    result.innerHTML=`<p style="color:var(--red)">Fejl ved analyse: ${e.message}</p>`;
+    result.classList.add('show');
+  }
+
+  btn.disabled=false;
+  spin.classList.remove('show');
+  txt.textContent='🔍 Analysér mine kvalitetsdata';
+}
+
+function topNJS(arr,field,n=5){
+  const cnt={};
+  arr.forEach(r=>{const v=r[field]||'–';cnt[v]=(cnt[v]||0)+1;});
+  return Object.entries(cnt).map(([k,c])=>({key:k,count:c})).sort((a,b)=>b.count-a.count).slice(0,n);
+}
+
+// ── SCAN STOP-RAPPORT ─────────────────────────────────────────────────────
+let scanResult = {};
+
+async function scanStopRapport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+
+  const status = document.getElementById('scan-status');
+  const spin   = document.getElementById('scan-spin');
+  const txt    = document.getElementById('scan-txt');
+  status.style.display = 'block';
+  txt.textContent = 'Læser stop-rapporten…';
+
+  const b64 = await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload  = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Kunne ikke læse filen'));
+    r.readAsDataURL(file);
+  });
+
+  const imgSrc = 'data:' + file.type + ';base64,' + b64;
+
+  const prompt = `Du er en kvalitetsassistent hos Westpack A/S der producerer smykkeæsker med hotfoil-tryk. Du ser et billede af en håndskrevet eller udfyldt stop-rapport fra produktionen.
+
+Udtræk følgende felter og returner KUN gyldigt JSON – ingen forklaring, ingen markdown-backticks:
+
+{"dato":"YYYY-MM-DDTHH:MM","op":"","vnr":"","maskine":"","batch":"","folietype":"Kurz MSU|Pigmentfolie|Varmstempelfolie|Anden","foliefarve":"Guld|Sølv|Sort|Hvid|Grøn (pigment)|Rød (pigment)|Blå (pigment)|Anden","fejltype":"Folie afskalning|Kantbrud / ujævn kant|Manglende dækning|Forkert placering|Farvefejl|Papir-/materialefejl|Maskinstop|Klichéfejl|Andet","antal":0,"note":"","konfidensScore":0}
+
+Regler: vælg nærmeste match fra tilladte værdier. Tom streng hvis ulæseligt. konfidensScore 0-100. KUN JSON.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-iab': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: file.type, data: b64 } },
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+
+    const json = await resp.json();
+    const raw  = json.content?.find(b => b.type === 'text')?.text || '{}';
+    scanResult  = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    const score = scanResult.konfidensScore || 0;
+    const scoreColor = score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--orange)' : 'var(--red)';
+
+    const fields = [
+      { id:'s-dato',       label:'Dato & tid',          val:scanResult.dato||'',       type:'datetime-local' },
+      { id:'s-op',         label:'Operatør',             val:scanResult.op||'',         type:'text' },
+      { id:'s-vnr',        label:'Varenr.',              val:scanResult.vnr||'',        type:'text' },
+      { id:'s-maskine',    label:'Maskine',              val:scanResult.maskine||'',    type:'text' },
+      { id:'s-batch',      label:'Batch nr.',            val:scanResult.batch||'',      type:'text' },
+      { id:'s-folietype',  label:'Folietype',            val:scanResult.folietype||'',  type:'text' },
+      { id:'s-foliefarve', label:'Foliefarve',           val:scanResult.foliefarve||'', type:'text' },
+      { id:'s-fejltype',   label:'Fejltype',             val:scanResult.fejltype||'',   type:'text' },
+      { id:'s-antal',      label:'Antal fejl / spild',   val:scanResult.antal||'',      type:'number' },
+      { id:'s-note',       label:'Beskrivelse',          val:scanResult.note||'',       type:'textarea' },
+    ];
+
+    document.getElementById('scan-preview-img').innerHTML =
+      `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px;">
+         <img src="${imgSrc}" style="max-height:150px;border-radius:6px;border:1px solid var(--border);cursor:pointer;" onclick="visBilledeFuldskærm('${imgSrc}')">
+         <div>
+           <div style="font-size:.8rem;color:var(--muted);margin-bottom:4px;">Læsekvalitet</div>
+           <div style="font-size:1.8rem;font-weight:900;color:${scoreColor};">${score}%</div>
+           <div style="font-size:.75rem;color:var(--muted);">${score>=80?'✓ God læsning':'⚠️ Tjek felterne nøje'}</div>
+         </div>
+       </div>`;
+
+    document.getElementById('scan-fields').innerHTML = fields.map(f => {
+      const val = String(f.val||'').replace(/"/g,'&quot;');
+      const empty = !f.val;
+      const hi = empty ? 'border-color:var(--orange);background:#fff8f0;' : '';
+      if (f.type === 'textarea') return `<div class="form-group full"><label class="lbl">${f.label}${empty?' ⚠️':''}</label><textarea id="${f.id}" style="${hi}">${f.val||''}</textarea></div>`;
+      return `<div class="form-group"><label class="lbl">${f.label}${empty?' ⚠️':''}</label><input type="${f.type}" id="${f.id}" value="${val}" style="${hi}"></div>`;
+    }).join('');
+
+    status.style.display = 'none';
+    document.getElementById('scan-modal').classList.add('show');
+
+  } catch(err) {
+    txt.textContent = '⚠️ Kunne ikke læse: ' + err.message;
+    spin.classList.remove('show');
+  }
+}
+
+function bekræftScan() {
+  const map = {'f-dato':'s-dato','f-op':'s-op','f-vnr':'s-vnr','f-batch':'s-batch','f-antal':'s-antal','f-note':'s-note'};
+  Object.entries(map).forEach(([fId,sId])=>{
+    const s=document.getElementById(sId), t=document.getElementById(fId);
+    if(s&&t) t.value=s.value;
+  });
+  // Match selects
+  [['f-maskine','s-maskine'],['f-folietype','s-folietype'],['f-foliefarve','s-foliefarve'],['f-fejltype','s-fejltype']].forEach(([selId,srcId])=>{
+    const v=(document.getElementById(srcId)?.value||'').toLowerCase();
+    const sel=document.getElementById(selId);
+    if(!sel||!v) return;
+    [...sel.options].forEach(o=>{ if(o.value.toLowerCase()===v||v.includes(o.value.toLowerCase())) sel.value=o.value; });
+  });
+  document.getElementById('scan-modal').classList.remove('show');
+  document.getElementById('f-vnr').scrollIntoView({behavior:'smooth',block:'center'});
+  document.getElementById('f-vnr').style.outline='2px solid var(--green)';
+  setTimeout(()=>document.getElementById('f-vnr').style.outline='',2500);
+}
+
+function lukScanModal(e){ if(e.target===document.getElementById('scan-modal')) document.getElementById('scan-modal').classList.remove('show'); }
+
+function visBilledeFuldskærm(src){
+  document.getElementById('modal-title').textContent='Stop-rapport billede';
+  document.getElementById('modal-body').innerHTML=`<img src="${src}" style="width:100%;border-radius:6px;">`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function eksporterCSV(){
+  const cols=['dato','vnr','batch','maskine','folietype','foliefarve','kliche','fejltype','antal','status','op','note'];
+  const head=['Dato','Varenr','Batch','Maskine','Folietype','Foliefarve','Kliché','Fejltype','Antal','Status','Operatør','Note'];
+  const rows=[head.join(';')];
+  data.forEach(r=>rows.push(cols.map(c=>`"${String(r[c]||'').replace(/"/g,'""')}"`).join(';')));
+  const blob=new Blob(['\uFEFF'+rows.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='westpack_kvalitet_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+function importerCSV(){document.getElementById('import-file').click();}
+
+function handleImport(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const lines=ev.target.result.split('\n').slice(1);
+    let added=0;
+    lines.forEach(line=>{
+      if(!line.trim())return;
+      const cols=line.split(';').map(c=>c.replace(/^"|"$/g,'').replace(/""/g,'"'));
+      const [dato,vnr,maskine,folietype,foliefarve,fejltype,antal,status,op,note]=cols;
+      if(vnr&&fejltype){
+        data.push({id:Date.now()+Math.random(),dato,vnr,maskine,folietype,foliefarve,fejltype,antal:parseInt(antal)||0,status:status||'open',op,note,fotos:[]});
+        added++;
+      }
+    });
+    save();refreshAutocomplete();
+    alert(`${added} rækker importeret.`);
+  };
+  reader.readAsText(file,'UTF-8');
+}
+</script>
+</body>
+</html>
