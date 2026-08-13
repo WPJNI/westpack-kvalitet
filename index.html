@@ -6279,7 +6279,10 @@ function soegOpskrift(){
       const billedeSrc = o.billede || wpUrl;
       const harBillede = billedeSrc;
       html += `<div class="recipe-result" style="display:flex;gap:18px;flex-wrap:wrap;">
-        ${harBillede ? `<img src="${billedeSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;background:#fff;" onclick="visStortBillede('${o.id}')" onerror="this.onerror=null;this.outerHTML='<div style=\\'width:120px;height:120px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--border);flex-shrink:0;\\'>📦</div>'">` : '<div style="width:120px;height:120px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--border);flex-shrink:0;">📦</div>'}
+        <div style="display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+          ${harBillede ? `<img src="${billedeSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;background:#fff;" onclick="visStortBillede('${o.id}')" onerror="this.onerror=null;this.outerHTML='<div style=\\'width:120px;height:120px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--border);flex-shrink:0;\\'>📦</div>'">` : '<div style="width:120px;height:120px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--border);flex-shrink:0;">📦</div>'}
+          ${o.vaerktoj ? (o.vaerktojBillede?`<img src="${o.vaerktojBillede}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--gold);cursor:pointer;flex-shrink:0;" onclick="visStortVaerktojBillede('${o.id}')" title="Billede af værktøj">`:`<div style="width:120px;height:120px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;filter:grayscale(1);opacity:.5;" title="Intet værktøjsbillede endnu">🛠️</div>`) : ''}
+        </div>
         <div style="flex:1;min-width:240px;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
             <div>
@@ -6297,8 +6300,7 @@ function soegOpskrift(){
               ${o.lokation?`<div style="font-size:.85rem;color:#aabfd4;margin-top:2px;">Lokation: ${o.lokation}</div>`:''}
             </div>
           </div>`:''}
-          ${o.vaerktoj?`<div style="background:var(--gold-lt,#f5e6c0);border:1px solid var(--gold);border-radius:8px;padding:12px 16px;margin-top:12px;display:flex;align-items:center;gap:12px;">
-            ${o.vaerktojBillede?`<img src="${o.vaerktojBillede}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--gold);cursor:pointer;flex-shrink:0;" onclick="visStortVaerktojBillede('${o.id}')">`:`<span style="font-size:1.5rem;flex-shrink:0;">🛠️</span>`}
+          ${o.vaerktoj?`<div style="background:var(--gold-lt,#f5e6c0);border:1px solid var(--gold);border-radius:8px;padding:12px 16px;margin-top:12px;">
             <div>
               <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--navy);font-weight:700;opacity:.7;">Værktøj der skal bruges</div>
               <div style="font-size:1.15rem;font-weight:900;color:var(--navy);">${o.vaerktoj}</div>
@@ -9078,7 +9080,7 @@ function renderMedarbejderView() {
 // ── App-version ───────────────────────────────────────────────────────────
 // Opdateres manuelt ved hver ny fil-levering, så det er synligt i UI'en hvilken
 // version der rent faktisk kører (bruges til at skelne mellem uploads/downloads).
-const APP_VERSION = '2026-08-13_22:40';
+const APP_VERSION = '13-08-2026_23_58_v19';
 
 // ── State ─────────────────────────────────────────────────────────────────
 const KEY = 'wp_stopper_v2_dev';
@@ -10207,7 +10209,7 @@ function renderOverblik(){
         <div class="problem-body">
           <div class="problem-title">${p.fejltype||'Ukendt fejl'} – ${vareLink(p.vnr)}</div>
           <div style="font-size:.82rem;color:var(--navy);font-weight:600;margin-bottom:8px;">${spredning.tekst}</div>
-          <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;">Tallet i hjørnet = antal stop med den værdi:</div>
+          <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;">Tallet i hjørnet = hvor mange af de ${p.stop} stop der SKETE med den kliché/farve i brug. Ikke hvad der løste det – se "Varenr. × Klichéskift" til det.</div>
           <div class="problem-tags">
             ${klicheHtml}
             ${farveHtml}
