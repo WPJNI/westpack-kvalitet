@@ -2111,20 +2111,6 @@ nav::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px;}
     <div id="jan-flow"></div>
   </div>
 
-  <div class="card" id="pte-card-nokrate">
-    <div class="card-title">🎯 NOK-rate (fejlprocent)</div>
-    <div class="jan-formula">NOK-rate = ( <b>antal fejl</b> ÷ <b>antal tryk</b> ) × 100</div>
-    <div id="jan-nok"></div>
-    <div style="background:var(--input-bg);border:1px dashed var(--gold);border-radius:8px;padding:14px;margin-top:12px;">
-      <div style="font-size:.74rem;font-weight:800;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">Prøv selv</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-        <div><label class="lbl" style="font-size:.72rem;">Antal fejl</label><input type="number" id="jan-nok-fejl" value="24" oninput="janBeregnNok()" style="width:100px;"></div>
-        <div><label class="lbl" style="font-size:.72rem;">Antal tryk</label><input type="number" id="jan-nok-tryk" value="500" oninput="janBeregnNok()" style="width:100px;"></div>
-      </div>
-      <div id="jan-nok-out" style="font-size:1.1rem;font-weight:800;margin-top:10px;"></div>
-    </div>
-  </div>
-
   <div class="card" id="pte-card-stopspild">
     <div class="card-title">📅 Stop & spild pr. uge</div>
     <p style="font-size:.82rem;color:var(--muted);margin-bottom:6px;">Tæller kun poster fra de sidste 7 dage (dato ≥ i dag − 7 dage).</p>
@@ -2392,6 +2378,10 @@ nav::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px;}
       <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;"><input type="checkbox" id="ptef-klicheStoerrelseFelt" style="width:18px;height:18px;"> Felt til at taste klichestørrelse ind for opgaven</label>
       <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;"><input type="checkbox" id="ptef-stoerrelsesForslag" style="width:18px;height:18px;"> Størrelsesbaseret forslag (bruger data fra Logo-analyse)</label>
       <label style="display:flex;align-items:center;gap:10px;font-size:.85rem;"><input type="checkbox" id="ptef-testForbedring" style="width:18px;height:18px;"> Testdata-forbedring: foreslå bedre indstilling ud fra egne materialetests (skifter ALDRIG automatisk – kun forslag, manuel værdi i Admin vinder altid)</label>
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:.85rem;padding:10px 12px;background:var(--input-bg);border-radius:6px;">
+        <span style="display:flex;align-items:center;gap:10px;"><input type="checkbox" id="ptef-visBatchSammenligning" style="width:18px;height:18px;flex-shrink:0;"> 📦 Batch-sammenligning på Slå op</span>
+        <span style="font-size:.78rem;color:var(--muted);padding-left:28px;">Viser en knap på vare-kortet: "Kan det skyldes en anden materiale-batch?". Trykker man på den, samles ALLE materialetests registreret for det varenummer i én tabel side om side, og felter der reelt afviger mellem batches (temp, tryktid, folie, kliché osv.) markeres gult. Bruges til at vurdere om et kvalitetsproblem hænger sammen med hvilken materiale-batch der blev brugt, i stedet for fx maskine eller operatør. Trækker udelukkende på materialetests I allerede har registreret – opretter ingen ny data.</span>
+      </label>
       <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding-left:28px;">
         <label class="lbl" style="margin:0;">Kræv mindst</label>
         <input type="number" id="ptef-forbedringTaerskel" min="1" style="width:70px;padding:5px 8px;" value="3">
@@ -5302,21 +5292,6 @@ function renderJan(){
     <b>Sådan læses det:</b> Alt starter øverst som noget en person taster eller scanner. Det gemmes i browseren (lag ②) – det er den eneste kopi, indtil du tager backup. Beregningerne i lag ③ gemmes <b>ikke</b>; de laves forfra hver gang du åbner en side, så tallene aldrig kan blive forældede. Derfor kan ethvert tal i lag ④ altid spores tilbage til de poster det kommer fra.
   </div>`;
 
-  const medTryk = data.find(r=>r.antalTryk && r.antal);
-  let nokHtml='';
-  if(medTryk){
-    const rate=(medTryk.antal/medTryk.antalTryk*100);
-    nokHtml=`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;">
-      <div style="font-size:.72rem;font-weight:800;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">Eksempel fra dine data – ${medTryk.vnr}</div>
-      <div class="jan-calc-line"><span class="jcl-l">Antal fejl</span><span class="jcl-v">${medTryk.antal}</span></div>
-      <div class="jan-calc-line"><span class="jcl-l">Antal tryk</span><span class="jcl-v">${medTryk.antalTryk}</span></div>
-      <div class="jan-result">${medTryk.antal} ÷ ${medTryk.antalTryk} × 100 = ${rate.toFixed(1)}%</div>
-    </div>`;
-  } else {
-    nokHtml=`<div class="jan-note" style="margin-top:0;">Ingen registrering har endnu både "antal fejl" og "antal tryk" udfyldt. Udfyld begge felter ved registrering for at få NOK-rate beregnet.</div>`;
-  }
-  document.getElementById('jan-nok').innerHTML=nokHtml;
-
   const uge=new Date(Date.now()-7*24*3600*1000);
   const sisteUge=data.filter(r=>new Date(r.dato)>=uge);
   const stopUge=sisteUge.length;
@@ -5350,24 +5325,8 @@ function renderJan(){
       <div class="jan-calc-line"><span class="jcl-l">wp_aendringslog_v1</span><span class="jcl-v">${aendringsLog.length} ændringer logget</span></div>
       <div class="jan-calc-line"><span class="jcl-l">Samlet datastørrelse</span><span class="jcl-v">~${nokKb} KB</span></div>
     </div>`;
-
-  janBeregnNok();
 }
 
-function janBeregnNok(){
-  const fEl=document.getElementById('jan-nok-fejl'), tEl=document.getElementById('jan-nok-tryk');
-  const f=parseFloat(fEl?fEl.value:0)||0;
-  const t=parseFloat(tEl?tEl.value:0)||0;
-  const out=document.getElementById('jan-nok-out');
-  if(!out) return;
-  if(f&&t&&t>=f){
-    const rate=f/t*100;
-    const farve=rate>=10?'var(--red)':rate>=5?'var(--orange)':'var(--green)';
-    out.innerHTML=`${f} ÷ ${t} × 100 = <span style="color:${farve}">${rate.toFixed(1)}%</span>`;
-  } else if(f&&t&&t<f){
-    out.innerHTML=`<span style="color:var(--red)">Antal tryk kan ikke være mindre end antal fejl</span>`;
-  } else out.innerHTML=`<span style="color:var(--muted)">Skriv begge tal</span>`;
-}
 
 // ── PTE ACCORDION-GRUPPER ────────────────────────────────────────────────────
 // Flytter de EKSISTERENDE, allerede fungerende kort ind i deres emne-gruppe.
@@ -5376,7 +5335,7 @@ function janBeregnNok(){
 // kortene ikke risikerer at blive nulstillet ved at blive flyttet igen.
 let pteGrupperOrganiseret = false;
 const PTE_GRUPPE_INDHOLD = {
-  overblik: ['pte-card-jan','pte-card-livedataflow','pte-card-nokrate','pte-card-stopspild','pte-card-topvarenr','pte-card-klicheskift'],
+  overblik: ['pte-card-jan','pte-card-livedataflow','pte-card-stopspild','pte-card-topvarenr','pte-card-klicheskift'],
   udvikling: ['pte-card-fejlrapporter','pte-card-backlog','pte-card-testforloeb','pte-card-gaugerr'],
   data: ['pte-card-demodata','pte-card-nulstil','pte-card-hvorgemmes'],
   selvlaerende: ['pte-card-stoerrelseskoder','pte-card-selvlaerende-afvig','admin-forslag-card','pte-card-scanmotor','pte-card-folieforslag','pte-card-folie-kriterier','pte-card-folie-regler','pte-card-folie-kompat','pte-card-aeskefarve-koder','pte-card-baggrund-kombi','pte-card-gate1skabelon','pte-card-naesteansvarligskabelon','pte-card-trykfeatures'],
@@ -5441,7 +5400,7 @@ function toggleAdminGruppe(navn){
 // det samme" – hver af de 4 nye trykindstillings-features kan slås til/fra uafhængigt, så I kan
 // se om de virker i praksis uden at skulle bede om kodeændringer for at fjerne noget der ikke bruges.
 const KEY_TRYKFEATURES = 'wp_trykfeatures_v1_dev';
-const TRYKFEATURES_DEFAULT = { visIndstillinger:true, visFarveVaelger:true, visGemteIndstillinger:true, visUdfordringerLoest:true, bedreBud:false, klicheStoerrelseFelt:false, stoerrelsesForslag:false, testForbedring:false, forbedringTaerskel:3 };
+const TRYKFEATURES_DEFAULT = { visIndstillinger:true, visFarveVaelger:true, visGemteIndstillinger:true, visUdfordringerLoest:true, bedreBud:false, klicheStoerrelseFelt:false, stoerrelsesForslag:false, testForbedring:false, visBatchSammenligning:false, forbedringTaerskel:3 };
 let trykFeatures = sikkerLaes(KEY_TRYKFEATURES, null);
 if(trykFeatures === null){ trykFeatures = {...TRYKFEATURES_DEFAULT}; sikkerGem(KEY_TRYKFEATURES, JSON.stringify(trykFeatures)); }
 // Bagudkompatibilitet: eksisterende gemte trykFeatures (fra før disse flag fandtes) skal
@@ -5450,7 +5409,7 @@ if(trykFeatures.visFarveVaelger===undefined) trykFeatures.visFarveVaelger = true
 if(trykFeatures.visGemteIndstillinger===undefined) trykFeatures.visGemteIndstillinger = true;
 if(trykFeatures.visUdfordringerLoest===undefined) trykFeatures.visUdfordringerLoest = true;
 function gemTrykFeatures(){
-  ['visIndstillinger','visFarveVaelger','visGemteIndstillinger','visUdfordringerLoest','bedreBud','klicheStoerrelseFelt','stoerrelsesForslag','testForbedring'].forEach(k=>{
+  ['visIndstillinger','visFarveVaelger','visGemteIndstillinger','visUdfordringerLoest','bedreBud','klicheStoerrelseFelt','stoerrelsesForslag','testForbedring','visBatchSammenligning'].forEach(k=>{
     trykFeatures[k] = document.getElementById('ptef-'+k).checked;
   });
   trykFeatures.forbedringTaerskel = Math.max(1, parseInt(document.getElementById('ptef-forbedringTaerskel').value)||3);
@@ -5476,7 +5435,7 @@ function renderPTE(){
   if(g1el) g1el.value = gate1Skabelon;
   const nael = document.getElementById('pte-naesteansvarlig-skabelon');
   if(nael) nael.value = naesteAnsvarligSkabelon;
-  ['visIndstillinger','visFarveVaelger','visGemteIndstillinger','visUdfordringerLoest','bedreBud','klicheStoerrelseFelt','stoerrelsesForslag','testForbedring'].forEach(k=>{
+  ['visIndstillinger','visFarveVaelger','visGemteIndstillinger','visUdfordringerLoest','bedreBud','klicheStoerrelseFelt','stoerrelsesForslag','testForbedring','visBatchSammenligning'].forEach(k=>{
     const cb = document.getElementById('ptef-'+k);
     if(cb) cb.checked = trykFeatures[k];
   });
@@ -6054,6 +6013,28 @@ function renderHjem(){
 }
 
 function gaaTilOpslag(){ showPageById('opslag'); }
+
+// Varenr -> "vnr – produktnavn". Bruges alle steder varenr vises, så man ikke skal huske
+// hvad et varenummer dækker over. Slår op i kartoteket (opskrifter) - single source of truth,
+// samme sted "Slå op"-siden selv henter navnet fra.
+function vareBeskrivelse(vnr){
+  if(!vnr || vnr==='–') return vnr||'';
+  const o = opskrifter.find(x=>x.vnr===vnr);
+  return (o && o.navn) ? `${vnr} – ${o.navn}` : vnr;
+}
+// HTML-snippet: varenr som tekst med museover-forklaring, klikbar for at hoppe til Slå op.
+function vareLink(vnr){
+  if(!vnr || vnr==='–') return vnr||'–';
+  const besk = vareBeskrivelse(vnr).replace(/"/g,'&quot;');
+  return `<span onclick="gaaTilVare('${vnr.replace(/'/g,"\\\\'")}')" title="${besk}" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;">${vnr}</span>`;
+}
+function gaaTilVare(vnr){
+  showPageById('opslag');
+  setTimeout(()=>{
+    const input = document.getElementById('opslag-input');
+    if(input){ input.value = vnr; soegOpskrift(); input.scrollIntoView({behavior:'smooth',block:'center'}); }
+  }, 100);
+}
 
 function farveDot(farve){
   const m={'guld':'#d4af37','sølv':'#c0c0c0','kobber':'#b87333','sort blank':'#1a1a1a','sort matt':'#2a2a2a','hvid':'#ffffff'};
@@ -8254,7 +8235,9 @@ function renderTrykPanelIndhold(o){
     : `<div style="font-size:.82rem;color:var(--muted);">Ingen registrerede udfordringer med denne vare endnu – godt tegn.</div>`;
   html += `</div>`;
   } // luk if(trykFeatures.visUdfordringerLoest)
-  html += `<button class="btn btn-ghost" style="margin-top:4px;width:100%;font-size:.8rem;" onclick="dropdownGaaTil('batchhistorik');setTimeout(()=>renderBatchSammenligning('${o.vnr.replace(/'/g,"\\\\'")}'),150);">📦 Kan det skyldes en anden materiale-batch? Se testede batches</button>`;
+  if(trykFeatures.visBatchSammenligning){
+    html += `<button class="btn btn-ghost" style="margin-top:4px;width:100%;font-size:.8rem;" onclick="dropdownGaaTil('batchhistorik');setTimeout(()=>renderBatchSammenligning('${o.vnr.replace(/'/g,"\\\\'")}'),150);">📦 Kan det skyldes en anden materiale-batch? Se testede batches</button>`;
+  }
 
   // Del 2: Bedre bud ud fra klichétype + folietype på tværs af varenumre
   if(trykFeatures.bedreBud){
@@ -9037,7 +9020,7 @@ function renderMedarbejderView() {
 // ── App-version ───────────────────────────────────────────────────────────
 // Opdateres manuelt ved hver ny fil-levering, så det er synligt i UI'en hvilken
 // version der rent faktisk kører (bruges til at skelne mellem uploads/downloads).
-const APP_VERSION = '13 · 2026-08-13';
+const APP_VERSION = '15 · 2026-08-13';
 
 // ── State ─────────────────────────────────────────────────────────────────
 const KEY = 'wp_stopper_v2_dev';
@@ -10008,7 +9991,7 @@ const COLORS=['#1a2e44','#2e4f6e','#3d6b93','#c8973a','#e0b96a','#e67e22','#27ae
 
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-function makeBarChart(canvasId, labels, values, color='#1a2e44'){
+function makeBarChart(canvasId, labels, values, color='#1a2e44', visVarenavnITooltip=false){
   destroyChart(canvasId);
   const ctx=document.getElementById(canvasId);
   if(!ctx) return;
@@ -10017,7 +10000,10 @@ function makeBarChart(canvasId, labels, values, color='#1a2e44'){
     data:{labels,datasets:[{data:values,backgroundColor:color,borderRadius:4}]},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
+      plugins:{
+        legend:{display:false},
+        tooltip: visVarenavnITooltip ? { callbacks:{ title:(items)=>vareBeskrivelse(items[0].label) } } : {}
+      },
       scales:{
         y:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#e8eef4'}},
         x:{ticks:{font:{size:10},maxRotation:35}}
@@ -10121,8 +10107,31 @@ function renderOverblik(){
   const scored=Object.values(problemMap).map(p=>({...p,score:p.stop*2+p.spild/10})).sort((a,b)=>b.score-a.score).slice(0,3);
   const pClass=['p1','p2','p3'];
   const pLabel=['#1','#2','#3'];
+  // Antal reelt tilgængelige klichétyper/farver, til at vurdere om spredningen er bred eller smal
+  const totalKlicheTyper = (adminData.klichetyper||[]).length || 2;
+  const totalFarver = (adminData.foliefarver||[]).filter(f=>f!=='Anden').length || 7;
+  function beskrivSpredning(p){
+    const kAlle = p.kliche.size >= totalKlicheTyper;
+    const fBred = p.farve.size >= totalFarver-1;
+    const kSmal = p.kliche.size === 1;
+    const fSmal = p.farve.size === 1;
+    if(kSmal && fSmal){
+      return `🎯 Sker kun med ${[...p.farve][0]}-folie på ${[...p.kliche][0]}-kliché – stærkt signal om hvor årsagen ligger.`;
+    }
+    if(kSmal){
+      return `🎯 Sker kun med ${[...p.kliche][0]}-kliché, uanset folie – tjek klichéen først.`;
+    }
+    if(fSmal){
+      return `🎯 Sker kun med ${[...p.farve][0]}-folie, uanset kliché – tjek foliet/farven først.`;
+    }
+    if(kAlle && fBred){
+      return `⚠️ Sker på tværs af begge klichétyper og stort set alle farver – ikke tilknyttet én bestemt kombination. Årsagen ligger nok i selve varen/værktøjet.`;
+    }
+    return `Set med ${p.kliche.size} af ${totalKlicheTyper} klichétyper og ${p.farve.size} af ${totalFarver} farver – blandet billede, endnu ikke et klart mønster.`;
+  }
   document.getElementById('top-problemer').innerHTML = scored.length
-    ? scored.map((p,i)=>{
+    ? '<p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;">🔧 = klichétyper set på disse stop · 🎨 = foliefarver set · 📦 = antal forskellige ordrer. Peg på varenummeret for produktnavn.</p>'
+    + scored.map((p,i)=>{
         const klicheHtml = [...p.kliche].map(k=>`<span class="tag tag-kliche">🔧 ${k}</span>`).join('');
         const farveHtml = [...p.farve].map(f=>`<span class="tag tag-farve"><span class="tag-dot" style="background:${farveDot(f.toLowerCase())}"></span>${f}</span>`).join('');
         // PO-numre listes IKKE enkeltvis her - en mur af 17 ordrenumre druknede det vigtige (kliché/farve).
@@ -10132,7 +10141,8 @@ function renderOverblik(){
       <div class="problem-card ${pClass[i]}">
         <div class="problem-rank ${pClass[i]}">${pLabel[i]}</div>
         <div class="problem-body">
-          <div class="problem-title">${p.fejltype||'Ukendt fejl'} – ${p.vnr}</div>
+          <div class="problem-title">${p.fejltype||'Ukendt fejl'} – ${vareLink(p.vnr)}</div>
+          <div style="font-size:.82rem;color:var(--navy);font-weight:600;margin-bottom:8px;">${beskrivSpredning(p)}</div>
           <div class="problem-tags">
             ${klicheHtml}
             ${farveHtml}
@@ -10196,7 +10206,7 @@ function renderOverblik(){
   const matMax=Math.max(...vnrs.flatMap(v=>skiftKolonner.map(k=>mat[v][skiftLabel(k)]||0)),1);
   let matHtml=`<table><thead><tr><th>Varenr.</th>${skiftKolonner.map(k=>`<th>${skiftLabel(k)}</th>`).join('')}</tr></thead><tbody>`;
   vnrs.forEach(v=>{
-    matHtml+=`<tr><td><strong>${v}</strong></td>`;
+    matHtml+=`<tr><td><strong>${vareLink(v)}</strong></td>`;
     skiftKolonner.forEach(k=>{
       const val=mat[v][skiftLabel(k)]||0;
       const t=val/matMax;
@@ -10284,7 +10294,7 @@ function renderDash(){
       <div class="lbl">Hyppigste fejltype</div>
     </div>
     <div class="kpi">
-      <div class="val" style="font-size:1.3rem;margin-top:4px;">${topVnr}</div>
+      <div class="val" style="font-size:1.3rem;margin-top:4px;">${vareLink(topVnr)}</div>
       <div class="lbl">Varenr. flest stop</div>
     </div>`;
 
@@ -10292,7 +10302,7 @@ function renderDash(){
   const fejl=topN(data,'fejltype');
   makeBarChart('ch-fejl',fejl.map(x=>x.key),fejl.map(x=>x.count),'#1a2e44');
   const vnr=topN(data,'vnr');
-  makeBarChart('ch-vnr',vnr.map(x=>x.key),vnr.map(x=>x.count),'#c8973a');
+  makeBarChart('ch-vnr',vnr.map(x=>x.key),vnr.map(x=>x.count),'#c8973a',true);
   const farve=topN(data,'foliefarve');
   makeBarChart('ch-farve',farve.map(x=>x.key),farve.map(x=>x.count),'#2e4f6e');
 
@@ -10554,7 +10564,7 @@ function renderAnalyse(){
     data:{labels:spild.map(x=>x.key),datasets:[{data:spild.map(x=>x.count),backgroundColor:'#c0392b',borderRadius:4}]},
     options:{
       indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:(items)=>vareBeskrivelse(items[0].label)}}},
       scales:{x:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#e8eef4'}},y:{ticks:{font:{size:10}}}}
     }
   });
@@ -11118,7 +11128,7 @@ function renderLog(){
     document.getElementById('mangler-loesning-liste').innerHTML = mangler.map(r=>`
       <div style="display:flex;align-items:center;gap:12px;background:var(--orange-lt);border:1px solid #fdd8b0;border-radius:8px;padding:10px 14px;flex-wrap:wrap;">
         <div style="flex:1;min-width:180px;cursor:pointer;" onclick="visRapportDetaljer(${r.id})">
-          <div style="font-weight:800;color:var(--navy);font-size:.9rem;">${r.vnr} – ${r.fejltype||'stop'}</div>
+          <div style="font-weight:800;color:var(--navy);font-size:.9rem;" title="${vareBeskrivelse(r.vnr).replace(/"/g,'&quot;')}">${r.vnr} – ${r.fejltype||'stop'}</div>
           <div style="font-size:.76rem;color:var(--muted);">${(r.dato||'').slice(0,10)}${r.maskine&&r.maskine!=='–'?' · '+r.maskine:''}${r.antal?' · '+r.antal+' stk.':''}</div>
         </div>
         <button class="btn btn-primary" style="padding:7px 16px;font-size:.82rem;" onclick="aabnHurtigLoesning(${r.id})">✅ Tilføj løsning</button>
@@ -11157,7 +11167,7 @@ function renderLog(){
   tbody.innerHTML=rows.map(r=>`
     <tr style="cursor:pointer;" onclick="visRapportDetaljer(${r.id})">
       <td style="white-space:nowrap;color:var(--muted);font-size:.78rem;">${(r.dato||'').replace('T',' ')}</td>
-      <td><strong>${r.vnr}</strong>${(r.tags&&r.tags.length)?`<div style="margin-top:3px;">${r.tags.map(t=>`<span class="tag" style="font-size:.65rem;padding:1px 7px;">${t}</span>`).join(' ')}</div>`:''}</td>
+      <td><strong title="${vareBeskrivelse(r.vnr).replace(/"/g,'&quot;')}" style="text-decoration:underline dotted;text-underline-offset:2px;">${r.vnr}</strong>${(r.tags&&r.tags.length)?`<div style="margin-top:3px;">${r.tags.map(t=>`<span class="tag" style="font-size:.65rem;padding:1px 7px;">${t}</span>`).join(' ')}</div>`:''}</td>
       <td style="font-size:.82rem;">${r.ponr||'–'}</td>
       <td style="font-size:.82rem;">${r.maskine}</td>
       <td><span class="badge badge-nok">${r.fejltype}</span></td>
