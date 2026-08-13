@@ -431,6 +431,8 @@ canvas{display:block;max-width:100%;}
 .tag-farve{display:inline-flex;align-items:center;gap:5px;background:var(--gold-lt);color:#8a6a1a;border-color:#f0dfa8;}
 .tag-dot{width:9px;height:9px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15);flex-shrink:0;}
 .tag-batch{background:var(--bg);color:var(--muted);border-color:var(--border);}
+.tag{position:relative;}
+.tag-count{position:absolute;top:-7px;right:-7px;background:var(--navy);color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid #fff;}
 .problem-desc{font-size:.8rem;color:var(--muted);line-height:1.5;}
 .problem-count{text-align:right;flex-shrink:0;}
 .problem-count .big{font-size:1.8rem;font-weight:900;color:var(--navy);line-height:1;}
@@ -920,6 +922,20 @@ nav::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px;}
           <div class="form-group"><label class="lbl">Maskine <span style="color:var(--red)">*</span></label><input type="text" id="vare-maskine" placeholder="fx Hotfoil #20" list="vare-maskine-list"><datalist id="vare-maskine-list"></datalist></div>
           <div class="form-group"><label class="lbl">Værktøj</label><input type="text" id="vare-vaerktoj" placeholder="fx ALM-kliché 232630"></div>
           <div class="form-group"><label class="lbl">Placering af værktøj</label><input type="text" id="vare-vaerktojplacering" placeholder="fx Skab 3 · Skuffe B"></div>
+          <div class="form-group full">
+            <label class="lbl">Billede af værktøj</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+              <label class="btn btn-ghost" style="padding:8px 14px;font-size:.82rem;cursor:pointer;position:relative;overflow:hidden;display:inline-flex;align-items:center;">
+                📷 Tag billede
+                <input type="file" accept="image/*" capture="environment" onchange="vaerktojBilledeValgt(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;">
+              </label>
+              <label class="btn btn-ghost" style="padding:8px 14px;font-size:.82rem;cursor:pointer;position:relative;overflow:hidden;display:inline-flex;align-items:center;">
+                📁 Upload billede
+                <input type="file" accept="image/*" onchange="vaerktojBilledeValgt(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;">
+              </label>
+            </div>
+            <div id="vaerktoj-foto-preview"></div>
+          </div>
           <div class="form-group"><label class="lbl">Dummy låg</label><input type="text" id="vare-indretning" placeholder="fx dummy-låg fra 00183000102"></div>
           <div class="form-group"><label class="lbl">Placering af dummy låg</label><input type="text" id="vare-indretning-placering" placeholder="fx Skab 2 · Hylde 1"></div>
           <div class="form-group"><label class="lbl">Folietype <span style="color:var(--red)">*</span></label><input type="text" id="vare-folietype" placeholder="fx HMD"></div>
@@ -6282,11 +6298,11 @@ function soegOpskrift(){
             </div>
           </div>`:''}
           ${o.vaerktoj?`<div style="background:var(--gold-lt,#f5e6c0);border:1px solid var(--gold);border-radius:8px;padding:12px 16px;margin-top:12px;display:flex;align-items:center;gap:12px;">
-            <span style="font-size:1.5rem;">🛠️</span>
+            ${o.vaerktojBillede?`<img src="${o.vaerktojBillede}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--gold);cursor:pointer;flex-shrink:0;" onclick="visStortVaerktojBillede('${o.id}')">`:`<span style="font-size:1.5rem;flex-shrink:0;">🛠️</span>`}
             <div>
               <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--navy);font-weight:700;opacity:.7;">Værktøj der skal bruges</div>
               <div style="font-size:1.15rem;font-weight:900;color:var(--navy);">${o.vaerktoj}</div>
-              ${o.vaerktojplacering?`<div style="font-size:.82rem;color:var(--navy);font-weight:700;margin-top:4px;">📍 ${o.vaerktojplacering}</div>`:''}
+              <div style="font-size:.82rem;color:var(--navy);font-weight:700;margin-top:4px;">📍 ${o.vaerktojplacering||'–'}</div>
             </div>
           </div>`:''}
           ${o.indretning?`<div style="background:#eaf4fb;border:1px solid #b8dcf0;border-radius:8px;padding:12px 16px;margin-top:12px;display:flex;align-items:center;gap:12px;">
@@ -6429,7 +6445,16 @@ function visStortBillede(id){
   document.getElementById('modal').classList.add('show');
 }
 
+function visStortVaerktojBillede(id){
+  const o = opskrifter.find(x=>String(x.id)===String(id));
+  if(!o || !o.vaerktojBillede) return;
+  document.getElementById('modal-title').textContent = '🛠️ ' + (o.vaerktoj||'Værktøj') + (o.vaerktojplacering?' – '+o.vaerktojplacering:'');
+  document.getElementById('modal-body').innerHTML = `<img src="${o.vaerktojBillede}" style="width:100%;border-radius:6px;background:#fff;">`;
+  document.getElementById('modal').classList.add('show');
+}
+
 let vareBilledeData = null;
+let vaerktojBilledeData = null;
 
 // ── Farve-indstillinger pr. vare (redigerbar) ──
 const FARVE_VALG = ['guld','sølv','kobber','sort blank','sort matt','hvid'];
@@ -6494,6 +6519,8 @@ function aabnVareRedigering(forudfyldVnr){
   if(typeof forudfyldVnr==='string') document.getElementById('vare-vnr').value = forudfyldVnr;
   vareBilledeData = null;
   document.getElementById('vare-foto-preview').innerHTML = '';
+  vaerktojBilledeData = null;
+  document.getElementById('vaerktoj-foto-preview').innerHTML = '';
   document.getElementById('vare-folier-liste').innerHTML = '';
   // Fyld maskine-datalist
   document.getElementById('vare-maskine-list').innerHTML = adminData.maskiner.map(m=>`<option value="${m}">`).join('');
@@ -6528,6 +6555,8 @@ function redigerVare(id){
   fyldFarveRaekker(o.folier);
   vareBilledeData = o.billede || null;
   document.getElementById('vare-foto-preview').innerHTML = o.billede ? `<div style="position:relative;display:inline-block;"><img src="${o.billede}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"><button onclick="fjernVareBillede()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;">✕</button></div>` : '';
+  vaerktojBilledeData = o.vaerktojBillede || null;
+  document.getElementById('vaerktoj-foto-preview').innerHTML = o.vaerktojBillede ? `<div style="position:relative;display:inline-block;"><img src="${o.vaerktojBillede}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"><button onclick="fjernVaerktojBillede()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;">✕</button></div>` : '';
   document.getElementById('vare-maskine-list').innerHTML = adminData.maskiner.map(m=>`<option value="${m}">`).join('');
   document.getElementById('vare-modal').classList.add('show');
 }
@@ -6554,6 +6583,34 @@ function vareBilledeValgt(e){
   };
   reader.readAsDataURL(file);
   e.target.value = '';
+}
+
+function vaerktojBilledeValgt(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxDim = 800;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxDim){ h = h*maxDim/w; w = maxDim; }
+      else if(h > maxDim){ w = w*maxDim/h; h = maxDim; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      vaerktojBilledeData = canvas.toDataURL('image/jpeg', 0.8);
+      document.getElementById('vaerktoj-foto-preview').innerHTML = `<div style="position:relative;display:inline-block;"><img src="${vaerktojBilledeData}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);"><button onclick="fjernVaerktojBillede()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;">✕</button></div>`;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function fjernVaerktojBillede(){
+  vaerktojBilledeData = null;
+  document.getElementById('vaerktoj-foto-preview').innerHTML = '';
 }
 
 function fjernVareBillede(){
@@ -6589,7 +6646,8 @@ function gemVare(){
     folier: laesFarveRaekker(),
     op: document.getElementById('vare-op').value.trim(),
     note: document.getElementById('vare-note').value.trim(),
-    billede: vareBilledeData
+    billede: vareBilledeData,
+    vaerktojBillede: vaerktojBilledeData
   };
   if(editId){
     const idx = opskrifter.findIndex(o=>String(o.id)===String(editId));
@@ -9020,7 +9078,7 @@ function renderMedarbejderView() {
 // ── App-version ───────────────────────────────────────────────────────────
 // Opdateres manuelt ved hver ny fil-levering, så det er synligt i UI'en hvilken
 // version der rent faktisk kører (bruges til at skelne mellem uploads/downloads).
-const APP_VERSION = '15 · 2026-08-13';
+const APP_VERSION = '2026-08-13_22:40';
 
 // ── State ─────────────────────────────────────────────────────────────────
 const KEY = 'wp_stopper_v2_dev';
@@ -10097,11 +10155,14 @@ function renderOverblik(){
   const problemMap={};
   data.forEach(r=>{
     const k=`${r.fejltype}||${r.vnr}`;
-    if(!problemMap[k]) problemMap[k]={fejltype:r.fejltype,vnr:r.vnr,kliche:new Set(),farve:new Set(),stop:0,spild:0,batch:new Set()};
+    if(!problemMap[k]) problemMap[k]={fejltype:r.fejltype,vnr:r.vnr,kliche:{},farve:{},stop:0,spild:0,batch:new Set()};
     const p=problemMap[k];
     p.stop++; p.spild+=r.antal;
-    if(r.kliche&&r.kliche!=='–') p.kliche.add(r.kliche);
-    if(r.foliefarve&&r.foliefarve!=='–') p.farve.add(r.foliefarve);
+    // Kliché/farve tælles nu pr. værdi (ikke bare tilstedeværelse) - Jan, bekræftet: et lille
+    // tal i hjørnet af hver tag er mere gennemsigtigt end kun nedtoning, og undgår at appen
+    // fortolker FOR brugeren hvor tydeligt et mønster er - tallene taler for sig selv.
+    if(r.kliche&&r.kliche!=='–') p.kliche[r.kliche]=(p.kliche[r.kliche]||0)+1;
+    if(r.foliefarve&&r.foliefarve!=='–') p.farve[r.foliefarve]=(p.farve[r.foliefarve]||0)+1;
     if(r.ponr&&r.ponr!=='–') p.batch.add(r.ponr);
   });
   const scored=Object.values(problemMap).map(p=>({...p,score:p.stop*2+p.spild/10})).sort((a,b)=>b.score-a.score).slice(0,3);
@@ -10111,29 +10172,32 @@ function renderOverblik(){
   const totalKlicheTyper = (adminData.klichetyper||[]).length || 2;
   const totalFarver = (adminData.foliefarver||[]).filter(f=>f!=='Anden').length || 7;
   function beskrivSpredning(p){
-    const kAlle = p.kliche.size >= totalKlicheTyper;
-    const fBred = p.farve.size >= totalFarver-1;
-    const kSmal = p.kliche.size === 1;
-    const fSmal = p.farve.size === 1;
+    const klicheTyper = Object.keys(p.kliche), farveTyper = Object.keys(p.farve);
+    const kAlle = klicheTyper.length >= totalKlicheTyper;
+    const fBred = farveTyper.length >= totalFarver-1;
+    const kSmal = klicheTyper.length === 1;
+    const fSmal = farveTyper.length === 1;
     if(kSmal && fSmal){
-      return `🎯 Sker kun med ${[...p.farve][0]}-folie på ${[...p.kliche][0]}-kliché – stærkt signal om hvor årsagen ligger.`;
+      return {type:'smal', klicheMistaenkt:true, farveMistaenkt:true, tekst:`🎯 Sker kun med ${farveTyper[0]}-folie på ${klicheTyper[0]}-kliché – stærkt signal om hvor årsagen ligger.`};
     }
     if(kSmal){
-      return `🎯 Sker kun med ${[...p.kliche][0]}-kliché, uanset folie – tjek klichéen først.`;
+      return {type:'smal', klicheMistaenkt:true, farveMistaenkt:false, tekst:`🎯 Sker kun med ${klicheTyper[0]}-kliché, uanset folie – tjek klichéen først.`};
     }
     if(fSmal){
-      return `🎯 Sker kun med ${[...p.farve][0]}-folie, uanset kliché – tjek foliet/farven først.`;
+      return {type:'smal', klicheMistaenkt:false, farveMistaenkt:true, tekst:`🎯 Sker kun med ${farveTyper[0]}-folie, uanset kliché – tjek foliet/farven først.`};
     }
     if(kAlle && fBred){
-      return `⚠️ Sker på tværs af begge klichétyper og stort set alle farver – ikke tilknyttet én bestemt kombination. Årsagen ligger nok i selve varen/værktøjet.`;
+      return {type:'bred', klicheMistaenkt:false, farveMistaenkt:false, tekst:`⚠️ Tallene i hjørnet viser det er spredt ud over stort set alt – ingen enkelt kliché eller farve peger sig ud. Årsagen ligger nok i selve varen/værktøjet.`};
     }
-    return `Set med ${p.kliche.size} af ${totalKlicheTyper} klichétyper og ${p.farve.size} af ${totalFarver} farver – blandet billede, endnu ikke et klart mønster.`;
+    return {type:'blandet', klicheMistaenkt:false, farveMistaenkt:false, tekst:`Endnu ikke et klart mønster (set med ${klicheTyper.length} af ${totalKlicheTyper} klichétyper og ${farveTyper.length} af ${totalFarver} farver) – se tallene i hjørnet for fordelingen.`};
   }
   document.getElementById('top-problemer').innerHTML = scored.length
-    ? '<p style="font-size:.78rem;color:var(--muted);margin-bottom:12px;">🔧 = klichétyper set på disse stop · 🎨 = foliefarver set · 📦 = antal forskellige ordrer. Peg på varenummeret for produktnavn.</p>'
-    + scored.map((p,i)=>{
-        const klicheHtml = [...p.kliche].map(k=>`<span class="tag tag-kliche">🔧 ${k}</span>`).join('');
-        const farveHtml = [...p.farve].map(f=>`<span class="tag tag-farve"><span class="tag-dot" style="background:${farveDot(f.toLowerCase())}"></span>${f}</span>`).join('');
+    ? scored.map((p,i)=>{
+        const spredning = beskrivSpredning(p);
+        const klicheHtml = Object.entries(p.kliche).sort((a,b)=>b[1]-a[1])
+          .map(([k,antal])=>`<span class="tag tag-kliche">🔧 ${k}<span class="tag-count">${antal}</span></span>`).join('');
+        const farveHtml = Object.entries(p.farve).sort((a,b)=>b[1]-a[1])
+          .map(([f,antal])=>`<span class="tag tag-farve"><span class="tag-dot" style="background:${farveDot(f.toLowerCase())}"></span>${f}<span class="tag-count">${antal}</span></span>`).join('');
         // PO-numre listes IKKE enkeltvis her - en mur af 17 ordrenumre druknede det vigtige (kliché/farve).
         // Samlet antal er nok til overblikket; de enkelte numre findes i Log ved behov.
         const batchHtml = p.batch.size ? `<span class="tag tag-batch">📦 ${p.batch.size} ${p.batch.size===1?'ordre':'ordrer'}</span>` : '';
@@ -10142,7 +10206,8 @@ function renderOverblik(){
         <div class="problem-rank ${pClass[i]}">${pLabel[i]}</div>
         <div class="problem-body">
           <div class="problem-title">${p.fejltype||'Ukendt fejl'} – ${vareLink(p.vnr)}</div>
-          <div style="font-size:.82rem;color:var(--navy);font-weight:600;margin-bottom:8px;">${beskrivSpredning(p)}</div>
+          <div style="font-size:.82rem;color:var(--navy);font-weight:600;margin-bottom:8px;">${spredning.tekst}</div>
+          <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;">Tallet i hjørnet = antal stop med den værdi:</div>
           <div class="problem-tags">
             ${klicheHtml}
             ${farveHtml}
