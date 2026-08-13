@@ -1304,7 +1304,7 @@ nav::-webkit-scrollbar-thumb{background:var(--gold);border-radius:4px;}
       <div class="chart-container" style="height:220px;"><canvas id="ch-farve"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">Åbne sager pr. maskine</div>
+      <div class="card-title">Pareto – maskine</div>
       <div class="chart-container" style="height:220px;"><canvas id="ch-maskine"></canvas></div>
     </div>
   </div>
@@ -6051,6 +6051,13 @@ function gaaTilVare(vnr){
     if(input){ input.value = vnr; soegOpskrift(); input.scrollIntoView({behavior:'smooth',block:'center'}); }
   }, 100);
 }
+function gaaTilBatchHistorik(ponr){
+  dropdownGaaTil('batchhistorik');
+  setTimeout(()=>{
+    const input = document.getElementById('bh-soeg');
+    if(input){ input.value = ponr; renderBatchHistorik(); input.scrollIntoView({behavior:'smooth',block:'center'}); }
+  }, 150);
+}
 
 function farveDot(farve){
   const m={'guld':'#d4af37','sølv':'#c0c0c0','kobber':'#b87333','sort blank':'#1a1a1a','sort matt':'#2a2a2a','hvid':'#ffffff'};
@@ -9080,7 +9087,7 @@ function renderMedarbejderView() {
 // ── App-version ───────────────────────────────────────────────────────────
 // Opdateres manuelt ved hver ny fil-levering, så det er synligt i UI'en hvilken
 // version der rent faktisk kører (bruges til at skelne mellem uploads/downloads).
-const APP_VERSION = '13-08-2026_23_58_v19';
+const APP_VERSION = '14-08-2026_00_20_v21';
 
 // ── State ─────────────────────────────────────────────────────────────────
 const KEY = 'wp_stopper_v2_dev';
@@ -10301,13 +10308,14 @@ function renderOverblik(){
   document.getElementById('batch-radar').innerHTML=batchData.length
     ? batchData.map(([b,info])=>{
         const mistaenkt = info.stop>=2;
+        const vareTitle = [...info.varer].map(v=>vareBeskrivelse(v)).join(' · ').replace(/"/g,'&quot;');
         return `
-      <div class="batch-row" style="${mistaenkt?'border-color:#fdd8b0;background:var(--orange-lt);':''}">
+      <div class="batch-row" style="${mistaenkt?'border-color:#fdd8b0;background:var(--orange-lt);':''}cursor:pointer;" onclick="gaaTilBatchHistorik('${b.replace(/'/g,"\\\\'")}')" title="${vareTitle||'Ingen varenr. registreret'}">
         <div class="batch-name">📋 PO ${b}${mistaenkt?' ⚠️':''}</div>
         <div class="batch-bar-track"><div class="batch-bar-fill" style="width:${Math.round(info.stop/bMax*100)}%"></div></div>
         <div class="batch-count">${info.stop} stop · ${info.spild} stk.</div>
       </div>
-      ${mistaenkt?`<div style="font-size:.76rem;color:var(--muted);padding:2px 14px 8px;margin-top:-4px;">↳ Rammer ${info.varer.size} vare(r). <strong>Anbefaling:</strong> indgangskontrol af denne PO ved næste levering – sammenlign 1:1 med materialetesten, afvis ved afvigelse.</div>`:''}`;
+      ${mistaenkt?`<div style="font-size:.76rem;color:var(--muted);padding:2px 14px 8px;margin-top:-4px;">↳ Rammer ${info.varer.size} vare(r): ${[...info.varer].map(v=>vareLink(v)).join(', ')}. <strong>Anbefaling:</strong> indgangskontrol af denne PO ved næste levering – sammenlign 1:1 med materialetesten, afvis ved afvigelse.</div>`:''}`;
       }).join('')
     : '<div class="empty">Ingen batch-numre registreret endnu.</div>';
 }
@@ -10373,9 +10381,10 @@ function renderDash(){
   const farve=topN(data,'foliefarve');
   makeBarChart('ch-farve',farve.map(x=>x.key),farve.map(x=>x.count),'#2e4f6e');
 
-  // Maskine åbne
-  const aabneData=data.filter(r=>r.status==='open'||r.status==='progress');
-  const mach=topN(aabneData,'maskine');
+  // Maskine - ALLE stop (ikke kun åbne), matcher de tre andre Pareto-diagrammer. Jan, bekræftet:
+  // "åbne sager" viste kun det aktuelle efterslæb (afhænger af hvor godt folk lukker sager),
+  // ikke hvor ofte maskinen reelt fejler - antal stop i alt er det rigtige pålidelighedsmål.
+  const mach=topN(data,'maskine');
   makeBarChart('ch-maskine',mach.map(x=>x.key),mach.map(x=>x.count),'#c0392b');
 }
 
